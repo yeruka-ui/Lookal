@@ -1,10 +1,5 @@
 "use client"
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 import type React from "react"
 
 import { useState, useCallback, useEffect, useRef } from "react"
@@ -484,40 +479,5 @@ export default function Home() {
     <CartProvider>
       <TentPage />
     </CartProvider>
-=======
-import { HomePage } from "@/components/home-page"
-
-export default function Home() {
-  return (
-    <HomePage onNavigateToShop={() => { /* Navigation handled by BottomNav router link */}} />
->>>>>>> Stashed changes
-=======
-import { HomePage } from "@/components/home-page"
-
-export default function Home() {
-  return (
-    <HomePage onNavigateToShop={() => { /* Navigation handled by BottomNav router link */}} />
->>>>>>> Stashed changes
-=======
-import { HomePage } from "@/components/home-page"
-
-export default function Home() {
-  return (
-    <HomePage onNavigateToShop={() => { /* Navigation handled by BottomNav router link */}} />
->>>>>>> Stashed changes
-=======
-import { HomePage } from "@/components/home-page"
-
-export default function Home() {
-  return (
-    <HomePage onNavigateToShop={() => { /* Navigation handled by BottomNav router link */}} />
->>>>>>> Stashed changes
-=======
-import { HomePage } from "@/components/home-page"
-
-export default function Home() {
-  return (
-    <HomePage onNavigateToShop={() => { /* Navigation handled by BottomNav router link */}} />
->>>>>>> Stashed changes
   )
 }
