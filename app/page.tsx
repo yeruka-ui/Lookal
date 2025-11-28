@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { CartProvider, useCart } from "@/lib/cart-context"
-import { shops, type Shop } from "@/lib/mock-data"
+import { shops, type Shop, type Product } from "@/lib/mock-data"
 import { ProductSwiper } from "@/components/product-swiper"
 import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
@@ -30,6 +30,10 @@ function TentPage() {
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [tentColorIndex, setTentColorIndex] = useState(0)
+  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([])
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [verticalOffset, setVerticalOffset] = useState(0)
+  const [bounceEffect, setBounceEffect] = useState(0)
   const { totalItems } = useCart()
 
   // Swipe handling
@@ -41,6 +45,7 @@ function TentPage() {
     const shuffled = [...shops].sort(() => Math.random() - 0.5)
     setShopQueue(shuffled.slice(1))
     setCurrentShop(shuffled[0])
+    setDisplayedProducts(shuffled[0].products)
     setViewingProducts(false)
     setIsZooming(false)
   }, [])
@@ -48,6 +53,13 @@ function TentPage() {
   useEffect(() => {
     shuffleShops()
   }, [shuffleShops])
+
+  // Update displayed products when current shop changes
+  useEffect(() => {
+    if (currentShop) {
+      setDisplayedProducts(currentShop.products)
+    }
+  }, [currentShop])
 
   const handleNextShop = () => {
     setSwipeOffset(-500)
@@ -93,15 +105,41 @@ function TentPage() {
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return
     const currentX = e.touches[0].clientX
-    const diff = currentX - touchStartX.current
-    setSwipeOffset(diff)
+    const currentY = e.touches[0].clientY
+    const diffX = currentX - touchStartX.current
+    const diffY = currentY - touchStartY.current
+
+    // Determine if horizontal or vertical swipe based on larger delta
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      // Horizontal swipe
+      setSwipeOffset(diffX)
+      setVerticalOffset(0)
+    } else {
+      // Vertical swipe
+      setVerticalOffset(diffY)
+      setSwipeOffset(0)
+
+      // Apply bounce effect when pulling up too hard
+      if (diffY < -150) {
+        const bounceIntensity = Math.min((Math.abs(diffY) - 150) / 100, 1)
+        setBounceEffect(bounceIntensity)
+      } else {
+        setBounceEffect(0)
+      }
+    }
   }
 
   const handleTouchEnd = () => {
     setIsDragging(false)
     const threshold = 100
 
-    if (swipeOffset < -threshold) {
+    // Check vertical swipe first
+    if (verticalOffset < -threshold) {
+      // Swiped up - load more products
+      setVerticalOffset(0)
+      setBounceEffect(0)
+      loadMoreProducts()
+    } else if (swipeOffset < -threshold) {
       // Swiped left - next shop
       handleNextShop()
     } else if (swipeOffset > threshold) {
@@ -112,7 +150,22 @@ function TentPage() {
       handleViewProducts()
     } else {
       setSwipeOffset(0)
+      setVerticalOffset(0)
+      setBounceEffect(0)
     }
+  }
+
+  const loadMoreProducts = () => {
+    if (!currentShop || isLoadingMore) return
+
+    setIsLoadingMore(true)
+
+    // Simulate loading delay and add shuffled products
+    setTimeout(() => {
+      const shuffledProducts = [...currentShop.products].sort(() => Math.random() - 0.5)
+      setDisplayedProducts(prev => [...prev, ...shuffledProducts])
+      setIsLoadingMore(false)
+    }, 300)
   }
 
   useEffect(() => {
@@ -124,6 +177,9 @@ function TentPage() {
       } else if (e.key === "ArrowRight") {
         setTentColorIndex((prev) => (prev + 1) % tentColorSchemes.length)
         handleViewProducts()
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault()
+        loadMoreProducts()
       }
     }
 
@@ -134,13 +190,31 @@ function TentPage() {
   // Mouse handlers for desktop swipe
   const handleMouseDown = (e: React.MouseEvent) => {
     touchStartX.current = e.clientX
+    touchStartY.current = e.clientY
     setIsDragging(true)
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return
-    const diff = e.clientX - touchStartX.current
-    setSwipeOffset(diff)
+    const diffX = e.clientX - touchStartX.current
+    const diffY = e.clientY - touchStartY.current
+
+    // Determine if horizontal or vertical based on larger delta
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      setSwipeOffset(diffX)
+      setVerticalOffset(0)
+    } else {
+      setVerticalOffset(diffY)
+      setSwipeOffset(0)
+
+      // Apply bounce effect when pulling up too hard
+      if (diffY < -150) {
+        const bounceIntensity = Math.min((Math.abs(diffY) - 150) / 100, 1)
+        setBounceEffect(bounceIntensity)
+      } else {
+        setBounceEffect(0)
+      }
+    }
   }
 
   const handleMouseUp = () => {
@@ -216,7 +290,7 @@ function TentPage() {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         style={{
-          transform: `translateX(${swipeOffset}px)`,
+          transform: `translate(${swipeOffset}px, ${verticalOffset}px) scale(${1 - bounceEffect * 0.05})`,
           opacity: isDragging ? opacity : 1,
           transitionDuration: isDragging ? "0ms" : "300ms",
         }}
@@ -280,9 +354,9 @@ function TentPage() {
 
           {/* Masonry Grid */}
           <div className="grid grid-cols-3 auto-rows-[100px] gap-3 grid-flow-dense">
-            {currentShop.products.map((product, index) => (
+            {displayedProducts.map((product, index) => (
               <div
-                key={product.id}
+                key={`${product.id}-${index}`}
                 className={`${getHeightClass(index)} relative border border-amber-900/10 bg-white overflow-hidden group transition-all hover:z-10 hover:shadow-lg rounded-xl`}
               >
                 <img
@@ -301,6 +375,21 @@ function TentPage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Loading indicator / Swipe up hint */}
+          <div className="mt-6 mb-4 flex flex-col items-center justify-center">
+            {isLoadingMore ? (
+              <div className="flex items-center gap-2 text-amber-700">
+                <ChevronUp className="w-5 h-5 animate-bounce" />
+                <span className="text-sm font-medium">Loading more products...</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-1 text-amber-600/60">
+                <ChevronUp className="w-4 h-4 animate-bounce" />
+                <span className="text-xs">Swipe up for more</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
