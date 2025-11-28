@@ -10,6 +10,16 @@ import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
 import { ShoppingCart, Star, MapPin, X, Eye, MessageCircle, ChevronUp } from "lucide-react"
 
+// Tent color schemes
+const tentColorSchemes = [
+  { primary: "#166534", secondary: "#f0fdf4" }, // Green & Light Green
+  { primary: "#991b1b", secondary: "#fef2f2" }, // Red & Light Red
+  { primary: "#1e40af", secondary: "#eff6ff" }, // Blue & Light Blue
+  { primary: "#7c2d12", secondary: "#fff7ed" }, // Orange & Light Orange
+  { primary: "#581c87", secondary: "#faf5ff" }, // Purple & Light Purple
+  { primary: "#be123c", secondary: "#fff1f2" }, // Pink & Light Pink
+]
+
 function TentPage() {
   const [cartOpen, setCartOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
@@ -19,6 +29,7 @@ function TentPage() {
   const [isZooming, setIsZooming] = useState(false)
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [tentColorIndex, setTentColorIndex] = useState(0)
   const { totalItems } = useCart()
 
   // Swipe handling
@@ -40,6 +51,8 @@ function TentPage() {
 
   const handleNextShop = () => {
     setSwipeOffset(-500)
+    // Change tent color on swipe
+    setTentColorIndex((prev) => (prev + 1) % tentColorSchemes.length)
     setTimeout(() => {
       if (shopQueue.length > 0) {
         setCurrentShop(shopQueue[0])
@@ -93,6 +106,8 @@ function TentPage() {
       handleNextShop()
     } else if (swipeOffset > threshold) {
       // Swiped right - view products (zoom in)
+      // Also change tent color on right swipe
+      setTentColorIndex((prev) => (prev + 1) % tentColorSchemes.length)
       setSwipeOffset(0)
       handleViewProducts()
     } else {
@@ -199,8 +214,8 @@ function TentPage() {
             <svg viewBox="0 0 400 100" className="w-full h-auto drop-shadow-2xl" preserveAspectRatio="none">
               <defs>
                 <pattern id="tentStripes" patternUnits="userSpaceOnUse" width="40" height="100">
-                  <rect width="20" height="100" fill="#166534" />
-                  <rect x="20" width="20" height="100" fill="#f0fdf4" />
+                  <rect width="20" height="100" fill={tentColorSchemes[tentColorIndex].primary} />
+                  <rect x="20" width="20" height="100" fill={tentColorSchemes[tentColorIndex].secondary} />
                 </pattern>
                 <linearGradient id="canopyShadow" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="rgba(0,0,0,0)" />
