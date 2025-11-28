@@ -10,9 +10,11 @@ interface SwipeCardProps {
   onSwipeLeft: () => void
   onSwipeRight: () => void
   onSwipeUp?: () => void
+  onSwipeDown?: () => void // New prop for exiting
   leftLabel?: string
   rightLabel?: string
   upLabel?: string
+  downLabel?: string
 }
 
 export function SwipeCard({
@@ -20,11 +22,13 @@ export function SwipeCard({
   onSwipeLeft,
   onSwipeRight,
   onSwipeUp,
+  onSwipeDown,
   leftLabel = "SKIP",
   rightLabel = "VIEW",
   upLabel = "DETAILS",
+  downLabel = "EXIT",
 }: SwipeCardProps) {
-  const [exitDirection, setExitDirection] = useState<"left" | "right" | "up" | null>(null)
+  const [exitDirection, setExitDirection] = useState<"left" | "right" | "up" | "down" | null>(null)
   const constraintsRef = useRef(null)
 
   const x = useMotionValue(0)
@@ -34,6 +38,8 @@ export function SwipeCard({
   const opacityLeft = useTransform(x, [-150, -50, 0], [1, 0.5, 0])
   const opacityRight = useTransform(x, [0, 50, 150], [0, 0.5, 1])
   const opacityUp = useTransform(y, [-150, -50, 0], [1, 0.5, 0])
+  const opacityDown = useTransform(y, [0, 50, 150], [0, 0.5, 1])
+  
   const scale = useTransform([x, y], ([latestX, latestY]: number[]) => {
     const distance = Math.sqrt(latestX ** 2 + latestY ** 2)
     return Math.max(0.95, 1 - distance / 2000)
@@ -46,11 +52,23 @@ export function SwipeCard({
     const isSwipeLeft = info.offset.x < -threshold || info.velocity.x < -velocityThreshold
     const isSwipeRight = info.offset.x > threshold || info.velocity.x > velocityThreshold
     const isSwipeUp = info.offset.y < -threshold || info.velocity.y < -velocityThreshold
+    const isSwipeDown = info.offset.y > threshold || info.velocity.y > velocityThreshold
 
-    if (isSwipeUp && onSwipeUp && Math.abs(info.offset.y) > Math.abs(info.offset.x)) {
-      setExitDirection("up")
-      setTimeout(onSwipeUp, 200)
-    } else if (isSwipeLeft) {
+    // Vertical swipes take precedence if vertical movement is greater than horizontal
+    if (Math.abs(info.offset.y) > Math.abs(info.offset.x)) {
+      if (isSwipeUp && onSwipeUp) {
+        setExitDirection("up")
+        setTimeout(onSwipeUp, 200)
+        return
+      }
+      if (isSwipeDown && onSwipeDown) {
+        setExitDirection("down")
+        setTimeout(onSwipeDown, 200)
+        return
+      }
+    }
+
+    if (isSwipeLeft) {
       setExitDirection("left")
       setTimeout(onSwipeLeft, 200)
     } else if (isSwipeRight) {
@@ -72,17 +90,21 @@ export function SwipeCard({
       } else if (e.key === "ArrowUp" && onSwipeUp) {
         setExitDirection("up")
         setTimeout(onSwipeUp, 200)
+      } else if (e.key === "ArrowDown" && onSwipeDown) {
+        setExitDirection("down")
+        setTimeout(onSwipeDown, 200)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [exitDirection, onSwipeLeft, onSwipeRight, onSwipeUp])
+  }, [exitDirection, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown])
 
   const exitVariants = {
     left: { x: -500, opacity: 0, transition: { duration: 0.3 } },
     right: { x: 500, opacity: 0, transition: { duration: 0.3 } },
     up: { y: -500, opacity: 0, transition: { duration: 0.3 } },
+    down: { y: 500, opacity: 0, transition: { duration: 0.3 } },
   }
 
   return (
@@ -99,23 +121,31 @@ export function SwipeCard({
       >
         {/* Swipe indicators */}
         <motion.div
-          className="absolute -left-4 top-1/2 -translate-y-1/2 bg-destructive text-destructive-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10"
+          className="absolute -left-4 top-1/2 -translate-y-1/2 bg-destructive text-destructive-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10 shadow-md pointer-events-none"
           style={{ opacity: opacityLeft }}
         >
           {leftLabel}
         </motion.div>
         <motion.div
-          className="absolute -right-4 top-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10"
+          className="absolute -right-4 top-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10 shadow-md pointer-events-none"
           style={{ opacity: opacityRight }}
         >
           {rightLabel}
         </motion.div>
         {onSwipeUp && (
           <motion.div
-            className="absolute left-1/2 -translate-x-1/2 -top-4 bg-accent text-accent-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10"
+            className="absolute left-1/2 -translate-x-1/2 -top-4 bg-accent text-accent-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10 shadow-md pointer-events-none"
             style={{ opacity: opacityUp }}
           >
             {upLabel}
+          </motion.div>
+        )}
+        {onSwipeDown && (
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2 -bottom-4 bg-muted text-muted-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10 shadow-md pointer-events-none"
+            style={{ opacity: opacityDown }}
+          >
+            {downLabel}
           </motion.div>
         )}
 

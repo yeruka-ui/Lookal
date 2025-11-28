@@ -1,5 +1,5 @@
 import type { Shop } from "@/lib/mock-data"
-import { Star, MapPin } from "lucide-react"
+import { Star, MapPin, BadgeCheck } from "lucide-react"
 
 interface TentCardProps {
   shop: Shop
@@ -20,105 +20,77 @@ export function TentCard({ shop }: TentCardProps) {
   }
 
   return (
-    <div className="relative w-full">
-      {/* Tent poles on sides */}
-      <div className="absolute -left-3 top-8 bottom-4 w-3 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 rounded-full shadow-lg z-10" />
-      <div className="absolute -right-3 top-8 bottom-4 w-3 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 rounded-full shadow-lg z-10" />
+    <div className="relative w-full h-[75vh] md:h-[600px] bg-white rounded-3xl overflow-hidden shadow-2xl border border-border/50 select-none">
+      
+      {/* Tent Canopy Visual (Subtle Top Detail) */}
+      <div className="absolute top-0 left-0 right-0 z-10">
+        <svg viewBox="0 0 400 40" preserveAspectRatio="none" className="w-full h-8 drop-shadow-md">
+          <defs>
+            <pattern id="tentStripes" patternUnits="userSpaceOnUse" width="40" height="40">
+              <rect width="20" height="40" fill="#166534" />
+              <rect x="20" width="20" height="40" fill="#f0fdf4" />
+            </pattern>
+          </defs>
+          <path
+            d="M0,0 L400,0 L400,20 Q390,35 380,20 Q370,35 360,20 Q350,35 340,20 Q330,35 320,20 Q310,35 300,20 Q290,35 280,20 Q270,35 260,20 Q250,35 240,20 Q230,35 220,20 Q210,35 200,20 Q190,35 180,20 Q170,35 160,20 Q150,35 140,20 Q130,35 120,20 Q110,35 100,20 Q90,35 80,20 Q70,35 60,20 Q50,35 40,20 Q30,35 20,20 L0,20 Z"
+            fill="url(#tentStripes)"
+          />
+        </svg>
+      </div>
 
-      {/* Tent canopy/awning - triangular fabric top */}
-      <div className="relative z-20 w-[100vw] ml-[calc(-50vw+50%)]">
-        {/* Main canopy triangle */}
-        <div className="relative">
-          <svg viewBox="0 0 400 80" preserveAspectRatio="none" className="w-full h-[100px] drop-shadow-lg">
-            {/* Striped tent fabric */}
-            <defs>
-              <pattern id="tentStripes" patternUnits="userSpaceOnUse" width="40" height="80">
-                <rect width="20" height="80" fill="#166534" />
-                <rect x="20" width="20" height="80" fill="#f0fdf4" />
-              </pattern>
-            </defs>
-            {/* Tent shape with scalloped bottom edge */}
-            <path
-              d="M0,80 L0,0 L400,0 L400,80 L380,80 Q370,65 360,80 Q350,65 340,80 Q330,65 320,80 Q310,65 300,80 Q290,65 280,80 Q270,65 260,80 Q250,65 240,80 Q230,65 220,80 Q210,65 200,80 Q190,65 180,80 Q170,65 160,80 Q150,65 140,80 Q130,65 120,80 Q110,65 100,80 Q90,65 80,80 Q70,65 60,80 Q50,65 40,80 Q30,65 20,80 Z"
-              fill="url(#tentStripes)"
-            />
-            {/* Tent top pole - removed as it doesn't make sense in full width */}
-            {/* <circle cx="200" cy="5" r="8" fill="#92400e" /> */}
-          </svg>
-        </div>
-
-        {/* Shop name banner hanging from canopy */}
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-30">
-          <div className="bg-green-50 border-2 border-green-800 px-4 py-1.5 rounded shadow-md">
-            <h2 className="text-sm font-bold text-green-900 whitespace-nowrap">{shop.name}</h2>
-          </div>
+      {/* Main Content Area - Masonry Grid of Products */}
+      <div className="h-full overflow-hidden bg-gray-50 pt-8 pb-32 px-2">
+        <div className="grid grid-cols-3 auto-rows-[80px] gap-2">
+          {shop.products.slice(0, 9).map((product, index) => (
+            <div
+              key={product.id}
+              className={`${getSizeClass(index)} relative rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100`}
+            >
+              <img
+                src={product.image || "/placeholder.svg"}
+                alt={product.name}
+                className="w-full h-full object-cover"
+                draggable={false}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Tent body - the "stall" interior with products */}
-      <div className="relative min-h-[calc(100vh-100px)] bg-gradient-to-b from-green-50 to-white border-x-4 border-b-4 border-green-800 rounded-b-lg shadow-xl mt-0 overflow-hidden">
-        {/* Wooden shelf/table effect at top */}
-        <div className="h-2 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
+      {/* Bumble/Tinder Style Info Overlay */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-24 pb-6 px-6 text-white">
+        <div className="flex items-end justify-between">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-3xl font-black tracking-tight leading-none mb-2 truncate">
+              {shop.name}
+            </h2>
+            
+            <div className="flex items-center gap-2 mb-2">
+              <span className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full text-xs font-semibold">
+                <BadgeCheck className="w-3 h-3 text-blue-400 fill-blue-400/20" />
+                {shop.owner}
+              </span>
+              <span className="flex items-center gap-1 bg-amber-500/90 backdrop-blur-md px-2 py-0.5 rounded-full text-xs font-bold text-black">
+                <Star className="w-3 h-3 fill-black text-black" />
+                {shop.rating}
+              </span>
+            </div>
 
-        {/* Products masonry grid inside tent */}
-        <div className="px-96 py-3 pt-6">
-          <div className="grid grid-cols-3 auto-rows-[60px] gap-3">
-            {shop.products.map((product, index) => (
-              <div
-                key={product.id}
-                className={`${getSizeClass(index)} relative rounded-xl overflow-hidden bg-white border border-border shadow-sm group`}
-              >
-                <img
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-                {/* Product price tag */}
-                <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
-                  ${product.price.toFixed(0)}
-                </div>
-                {/* Product name on hover */}
-                <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-1">
-                  <span className="text-[10px] text-white font-medium text-center leading-tight">{product.name}</span>
-                </div>
-              </div>
-            ))}
+            <div className="flex items-center gap-2 text-sm text-gray-200/90">
+              <MapPin className="w-4 h-4" />
+              <span className="truncate">{shop.location} • {shop.category}</span>
+            </div>
+            
+            <p className="mt-3 text-sm text-gray-300 line-clamp-2 leading-relaxed opacity-90">
+              {shop.description}
+            </p>
           </div>
         </div>
-
-        {/* Shop info footer */}
-        <div className="px-3 pb-3 pt-2 border-t border-border bg-secondary/30">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <MapPin className="w-3 h-3" />
-              <span>{shop.location}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Star className="w-3 h-3 fill-accent text-accent" />
-              <span className="font-semibold text-foreground">{shop.rating}</span>
-              <span className="text-muted-foreground">({shop.reviewCount})</span>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1.5 line-clamp-1">
-            by {shop.owner} · {shop.category}
-          </p>
+        
+        {/* Helper text */}
+        <div className="absolute bottom-2 right-4 text-[10px] text-white/40 font-medium">
+          Tap "View" to enter shop
         </div>
-      </div>
-
-      {/* Swipe instructions at bottom */}
-      <div className="flex justify-between mt-3 px-2 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <span className="w-6 h-6 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive">
-            ←
-          </span>
-          Next shop
-        </span>
-        <span className="flex items-center gap-1.5">
-          View products
-          <span className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-            →
-          </span>
-        </span>
       </div>
     </div>
   )
