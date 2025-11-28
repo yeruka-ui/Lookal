@@ -8,7 +8,8 @@ import { shops, type Shop, type Product } from "@/lib/mock-data"
 import { ProductSwiper } from "@/components/product-swiper"
 import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
-import { ShoppingCart, Star, MapPin, X, Eye, MessageCircle, ChevronUp } from "lucide-react"
+import { ShoppingCart, Star, MapPin, X, Eye, MessageCircle, ChevronUp, ArrowLeft, Home as HomeIcon, Compass, User } from "lucide-react"
+import { HomePage } from "@/components/home-page"
 
 // Tent color schemes
 const tentColorSchemes = [
@@ -20,9 +21,11 @@ const tentColorSchemes = [
   { primary: "#be123c", secondary: "#fff1f2" }, // Pink & Light Pink
 ]
 
-function TentPage() {
-  const [cartOpen, setCartOpen] = useState(false)
-  const [checkoutOpen, setCheckoutOpen] = useState(false)
+interface SwipeViewProps {
+  initialShop?: Shop | null
+}
+
+function SwipeView({ initialShop }: SwipeViewProps) {
   const [shopQueue, setShopQueue] = useState<Shop[]>([])
   const [currentShop, setCurrentShop] = useState<Shop | null>(null)
   const [viewingProducts, setViewingProducts] = useState(false)
@@ -42,13 +45,24 @@ function TentPage() {
   const contentRef = useRef<HTMLDivElement>(null)
 
   const shuffleShops = useCallback(() => {
-    const shuffled = [...shops].sort(() => Math.random() - 0.5)
-    setShopQueue(shuffled.slice(1))
-    setCurrentShop(shuffled[0])
-    setDisplayedProducts(shuffled[0].products)
+    let firstShop: Shop
+    let remainingShops: Shop[]
+
+    if (initialShop) {
+      firstShop = initialShop
+      remainingShops = shops.filter(s => s.id !== initialShop.id).sort(() => Math.random() - 0.5)
+    } else {
+      const shuffled = [...shops].sort(() => Math.random() - 0.5)
+      firstShop = shuffled[0]
+      remainingShops = shuffled.slice(1)
+    }
+
+    setShopQueue(remainingShops)
+    setCurrentShop(firstShop)
+    setDisplayedProducts(firstShop.products)
     setViewingProducts(false)
     setIsZooming(false)
-  }, [])
+  }, [initialShop])
 
   useEffect(() => {
     shuffleShops()
@@ -86,13 +100,6 @@ function TentPage() {
 
   const handleBackToShops = () => {
     setViewingProducts(false)
-    // Fix: Do NOT skip to next shop, stay on current one
-    // handleNextShop() 
-  }
-
-  const handleCheckout = () => {
-    setCartOpen(false)
-    setCheckoutOpen(true)
   }
 
   // Touch handlers for swipe
@@ -244,8 +251,6 @@ function TentPage() {
     return (
       <>
         <ProductSwiper shop={currentShop} onBack={handleBackToShops} />
-        <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={handleCheckout} />
-        <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
       </>
     )
   }
@@ -275,13 +280,13 @@ function TentPage() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col overflow-hidden bg-gradient-to-b from-sky-100 to-green-50 transition-transform duration-500 ease-out ${isZooming ? "scale-[2] opacity-0" : "scale-100 opacity-100"
+      className={`h-screen flex flex-col bg-gradient-to-b from-sky-100 to-green-50 transition-transform duration-500 ease-out ${isZooming ? "scale-[2] opacity-0" : "scale-100 opacity-100"
         }`}
     >
       {/* Main Swipeable Container (Roof + Stall) */}
       <div
         ref={contentRef}
-        className="flex-1 flex flex-col relative cursor-grab active:cursor-grabbing select-none" // Added padding bottom for fixed navbar
+        className="flex-1 flex flex-col relative cursor-grab active:cursor-grabbing select-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -394,82 +399,119 @@ function TentPage() {
         </div>
       </div>
 
-      {/* Swipe Indicators (Fixed) */}
-      <div
-        className={`fixed left-4 top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ${swipeOffset < -30 ? "opacity-100 scale-110" : "opacity-0 scale-90"}`}
-      >
-        <div className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl ring-4 ring-red-200">
-          <X className="w-8 h-8" />
-        </div>
-        <p className="text-red-600 font-bold text-center mt-2 bg-white/80 px-2 rounded-full backdrop-blur-sm">SKIP</p>
-      </div>
-      <div
-        className={`fixed right-4 top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ${swipeOffset > 30 ? "opacity-100 scale-110" : "opacity-0 scale-90"}`}
-      >
-        <div className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center shadow-2xl ring-4 ring-green-200">
-          <Eye className="w-8 h-8" />
-        </div>
-        <p className="text-green-700 font-bold text-center mt-2 bg-white/80 px-2 rounded-full backdrop-blur-sm">VIEW</p>
-      </div>
 
-
-      {/* Fixed Bottom Navigation Bar */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-40">
-        <div className="bg-white/90 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-2 flex items-center justify-between ring-1 ring-black/5">
-
+      {/* Fixed Swipe Controls */}
+      <div className="fixed inset-0 z-40 pointer-events-none">
+        <div className="h-full flex items-center justify-between px-4 sm:px-6 md:px-8">
           <button
             onClick={handleNextShop}
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-red-50 text-red-500 transition-colors"
+            className="pointer-events-auto flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 backdrop-blur-md shadow-lg hover:bg-red-50 active:scale-95 text-red-500 transition-all ring-1 ring-black/5"
           >
-            <X className="w-6 h-6" />
-            <span className="text-[10px] font-bold mt-0.5">Skip</span>
+            <X className="w-6 h-6 sm:w-7 sm:h-7" />
           </button>
-
-          <button className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-amber-50 text-amber-600 transition-colors">
-            <MessageCircle className="w-6 h-6" />
-            <span className="text-[10px] font-bold mt-0.5">Chat</span>
-          </button>
-
-          {/* Center Action Button (Cart) */}
-          <div className="-mt-8">
-            <button
-              onClick={() => setCartOpen(true)}
-              className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/40 flex items-center justify-center transform transition-transform hover:scale-105 active:scale-95 relative"
-            >
-              <ShoppingCart className="w-7 h-7" />
-              {totalItems > 0 && (
-                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
-                  {totalItems > 9 ? "9+" : totalItems}
-                </span>
-              )}
-            </button>
-          </div>
-
-          <div className="flex flex-col items-center justify-center w-14 h-14 text-muted-foreground/50">
-            <ChevronUp className="w-5 h-5 animate-bounce" />
-          </div>
-
           <button
             onClick={handleViewProducts}
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-green-50 text-green-600 transition-colors"
+            className="pointer-events-auto flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 backdrop-blur-md shadow-lg hover:bg-green-50 active:scale-95 text-green-600 transition-all ring-1 ring-black/5"
           >
-            <Eye className="w-6 h-6" />
-            <span className="text-[10px] font-bold mt-0.5">View</span>
+            <Eye className="w-6 h-6 sm:w-7 sm:h-7" />
           </button>
         </div>
       </div>
 
-      {/* Cart & Checkout */}
-      <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={handleCheckout} />
-      <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
+
+      {/* Fixed Swipe Controls */}
+
+    </div>
+  )
+}
+
+
+function AccountView() {
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
+      <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-4">
+        <User className="w-10 h-10 text-muted-foreground" />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">My Account</h2>
+      <p className="text-muted-foreground text-center mt-2">
+        Sign in to save your favorite shops and track orders.
+      </p>
+      <button className="mt-6 px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold">
+        Sign In
+      </button>
+    </div>
+  )
+}
+
+function BottomNav({ currentView, onViewChange, onCartOpen }: { currentView: string, onViewChange: (view: "home" | "swipe" | "account") => void, onCartOpen: () => void }) {
+  return (
+    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+      <div className="flex items-center gap-2 p-2 bg-background/80 backdrop-blur-xl border border-border shadow-2xl rounded-full">
+        <button
+          onClick={() => onViewChange("home")}
+          className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${currentView === "home" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}
+          title="Home"
+        >
+          <HomeIcon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => onViewChange("swipe")}
+          className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${currentView === "swipe" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}
+          title="Explore"
+        >
+          <Compass className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onCartOpen}
+          className="flex items-center justify-center w-12 h-12 rounded-full text-muted-foreground hover:bg-secondary transition-all duration-300"
+          title="Cart"
+        >
+          <ShoppingCart className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => onViewChange("account")}
+          className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${currentView === "account" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}
+          title="Account"
+        >
+          <User className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   )
 }
 
 export default function Home() {
+  const [view, setView] = useState<"home" | "swipe" | "account">("home")
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null)
+  const [cartOpen, setCartOpen] = useState(false)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+
+  const handleNavigateToShop = (shop: Shop) => {
+    setSelectedShop(shop)
+    setView("swipe")
+  }
+
+  const handleCheckout = () => {
+    setCartOpen(false)
+    setCheckoutOpen(true)
+  }
+
   return (
     <CartProvider>
-      <TentPage />
+      <div className="min-h-screen bg-background pb-20">
+        {view === "home" && <HomePage onNavigateToShop={handleNavigateToShop} />}
+        {view === "swipe" && <SwipeView initialShop={selectedShop} />}
+        {view === "account" && <AccountView />}
+      </div>
+
+      <BottomNav
+        currentView={view}
+        onViewChange={setView}
+        onCartOpen={() => setCartOpen(true)}
+      />
+
+      <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={handleCheckout} />
+      <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
     </CartProvider>
   )
 }

@@ -40,7 +40,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
     }
   }
 
-  const handleSwipeUp = () => {
+  const handleSwipeDown = () => {
     setShowDetail(true)
   }
 
@@ -101,10 +101,10 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
           key={currentProduct.id}
           onSwipeLeft={handleSwipeLeft}
           onSwipeRight={handleSwipeRight}
-          onSwipeUp={handleSwipeUp}
+          onSwipeDown={handleSwipeDown}
           leftLabel="SKIP"
           rightLabel="ADD"
-          upLabel="INFO"
+          downLabel="INFO"
         >
           <ProductCard product={currentProduct} shopName={shop.name} />
         </SwipeCard>
@@ -119,10 +119,10 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
           <span className="text-2xl text-destructive">✕</span>
         </button>
         <button
-          onClick={handleSwipeUp}
+          onClick={handleSwipeDown}
           className="w-12 h-12 rounded-full bg-card border-2 border-accent/30 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
         >
-          <span className="text-xl text-accent">↑</span>
+          <span className="text-xl text-accent">↓</span>
         </button>
         <button
           onClick={handleSwipeRight}
