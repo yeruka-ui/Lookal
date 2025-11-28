@@ -4,15 +4,19 @@ import { useState } from "react"
 import { shops, type Shop, type Product } from "@/lib/mock-data"
 import { Search, ShoppingCart, MapPin, Star, Filter, ArrowRight } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
+import { useRouter } from "next/navigation" // <-- ADDED: useRouter for navigation
 
 interface HomePageProps {
-    onNavigateToShop: (shop: Shop) => void
+    // This prop is maintained for structural compatibility, but the logic 
+    // within this component now uses useRouter for navigation.
+    onNavigateToShop: (shop: Shop) => void 
 }
 
 export function HomePage({ onNavigateToShop }: HomePageProps) {
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
     const { totalItems } = useCart()
+    const router = useRouter() // <-- Initialized router
 
     // Extract all unique categories
     const categories = Array.from(new Set(shops.map((s) => s.category)))
@@ -30,6 +34,11 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
         shop.products.map((product) => ({ ...product, shopName: shop.name, shopId: shop.id }))
     ).sort(() => Math.random() - 0.5).slice(0, 10) // Random mix
 
+    const handleShopClick = (shop: Shop) => {
+      // UPDATED: Use router.push to navigate to the explore route
+      router.push("/explore") 
+    }
+
     return (
         <div className="min-h-screen bg-background pb-24">
             {/* Header */}
@@ -39,6 +48,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
                         <h1 className="text-2xl font-black text-primary tracking-tight">Lookal</h1>
                         <p className="text-xs text-muted-foreground font-medium">Discover local gems</p>
                     </div>
+                    {/* Cart button relies on the parent LayoutWrapper to open the cart sheet */}
                     <button className="relative p-2 rounded-full hover:bg-secondary transition-colors">
                         <ShoppingCart className="w-6 h-6 text-foreground" />
                         {totalItems > 0 && (
@@ -96,7 +106,9 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
             <section className="py-4">
                 <div className="px-4 flex items-center justify-between mb-3">
                     <h2 className="text-lg font-bold text-foreground">Trending Shops</h2>
-                    <button className="text-xs font-bold text-primary flex items-center gap-1">
+                    <button 
+                        onClick={() => router.push("/explore")} // <-- UPDATED: Use router for View All
+                        className="text-xs font-bold text-primary flex items-center gap-1">
                         View All <ArrowRight className="w-3 h-3" />
                     </button>
                 </div>
@@ -105,7 +117,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
                     {filteredShops.map((shop) => (
                         <div
                             key={shop.id}
-                            onClick={() => onNavigateToShop(shop)}
+                            onClick={() => handleShopClick(shop)} // <-- UPDATED: Use router here
                             className="snap-center shrink-0 w-[280px] bg-card rounded-2xl overflow-hidden shadow-sm border border-border/50 group cursor-pointer hover:shadow-md transition-all"
                         >
                             <div className="h-32 overflow-hidden relative">
