@@ -4,7 +4,12 @@
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { useState } from "react"
+=======
+import { useState, useEffect, useCallback } from "react" 
+import { useRouter } from "next/navigation" 
+>>>>>>> Stashed changes
 =======
 import { useState, useEffect, useCallback } from "react" 
 import { useRouter } from "next/navigation" 
@@ -22,6 +27,10 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, ShoppingCart, Check, Package, ArrowDown, RotateCcw } from "lucide-react"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+import { useUI } from "@/lib/ui-context" // <-- ADDED
+>>>>>>> Stashed changes
 =======
 import { useUI } from "@/lib/ui-context" // <-- ADDED
 >>>>>>> Stashed changes
@@ -43,12 +52,15 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   const { addItem } = useCart()
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   
   // State for card navigation/reset
   const [currentProductIndex, setCurrentProductIndex] = useState(0)
   const [history, setHistory] = useState<SkippedProduct[]>([]) // History stack for skipped products
   const [resetKey, setResetKey] = useState(0); // Key to force SwipeCard component remount and reset
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   const router = useRouter() 
@@ -59,6 +71,9 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   const [history, setHistory] = useState<SkippedProduct[]>([]) 
   const [resetKey, setResetKey] = useState(0); 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -73,7 +88,10 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   // NEW: Effect to set full screen mode on mount and off on unmount
@@ -90,6 +108,9 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   }, [router])
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -134,6 +155,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   const handleSwipeDown = () => {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     onBack()
   }
 
@@ -153,6 +175,19 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
 <<<<<<< Updated upstream
   // FIX 2: Undo button logic
 =======
+  // Undo button logic (Backtrack to last skipped product)
+>>>>>>> Stashed changes
+=======
+    // Use the new exit handler which routes to the main view
+    handleBackToShops() 
+  }
+
+  // Handler to reset card animation on modal close
+  const handleCloseDetail = () => {
+    setShowDetail(false);
+    setResetKey(prev => prev + 1); // Force SwipeCard remount
+  }
+
   // Undo button logic (Backtrack to last skipped product)
 >>>>>>> Stashed changes
 =======
@@ -195,7 +230,11 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
         </div>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <Button onClick={onBack} className="gap-2 w-full max-w-xs" size="lg">
+=======
+        <Button onClick={handleBackToShops} className="gap-2 w-full max-w-xs" size="lg">
+>>>>>>> Stashed changes
 =======
         <Button onClick={handleBackToShops} className="gap-2 w-full max-w-xs" size="lg">
 >>>>>>> Stashed changes
@@ -210,6 +249,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   }
 
   return (
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     // CHANGE 1: Swapping bg-black/90 to bg-background
@@ -233,6 +273,13 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
         <button
           onClick={handleBackToShops}
 >>>>>>> Stashed changes
+=======
+    <div className="fixed inset-0 flex flex-col bg-background z-50 animate-in fade-in duration-200">
+      {/* Header */}
+      <div className="flex items-center gap-3 p-4 pt-6 text-foreground relative z-10">
+        <button
+          onClick={handleBackToShops}
+>>>>>>> Stashed changes
           className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors backdrop-blur-md text-foreground"
         >
           <ArrowDown className="w-5 h-5" />
@@ -240,7 +287,11 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
         
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         {/* FIX 2: Backtrack Button */}
+=======
+        {/* Undo Skip Button */}
+>>>>>>> Stashed changes
 =======
         {/* Undo Skip Button */}
 >>>>>>> Stashed changes
@@ -261,7 +312,10 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
           <h2 className="font-bold text-lg leading-tight">{shop.name}</h2>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           {/* CHANGE 3: Changing secondary text color */}
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -288,7 +342,11 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
         <div className="w-full h-[65vh] md:h-[500px]">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           {/* FIX 1 & 2: Use combined key to force reset on relevant state changes */}
+=======
+          {/* SwipeCard is keyed to force reset on relevant state changes */}
+>>>>>>> Stashed changes
 =======
           {/* SwipeCard is keyed to force reset on relevant state changes */}
 >>>>>>> Stashed changes
@@ -318,7 +376,10 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
             onClick={handleSwipeLeft}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             // CHANGE 4: Updating button background to secondary/light
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -333,7 +394,10 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
             onClick={handleSwipeUp}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             // CHANGE 5: Updating button background to secondary/light and text to foreground/dark
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -352,7 +416,10 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
         </div>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         {/* CHANGE 6: Updating footer text color */}
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -367,7 +434,11 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
           shop={shop} 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           onClose={handleCloseDetail} // Use the new close handler
+=======
+          onClose={handleCloseDetail} 
+>>>>>>> Stashed changes
 =======
           onClose={handleCloseDetail} 
 >>>>>>> Stashed changes
