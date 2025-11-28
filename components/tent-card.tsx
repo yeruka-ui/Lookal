@@ -20,16 +20,16 @@ export function TentCard({ shop }: TentCardProps) {
   }
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
+    <div className="relative w-full">
       {/* Tent poles on sides */}
       <div className="absolute -left-3 top-8 bottom-4 w-3 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 rounded-full shadow-lg z-10" />
       <div className="absolute -right-3 top-8 bottom-4 w-3 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 rounded-full shadow-lg z-10" />
 
       {/* Tent canopy/awning - triangular fabric top */}
-      <div className="relative z-20">
+      <div className="relative z-20 w-[100vw] ml-[calc(-50vw+50%)]">
         {/* Main canopy triangle */}
         <div className="relative">
-          <svg viewBox="0 0 400 80" className="w-full h-auto drop-shadow-lg">
+          <svg viewBox="0 0 400 80" preserveAspectRatio="none" className="w-full h-[100px] drop-shadow-lg">
             {/* Striped tent fabric */}
             <defs>
               <pattern id="tentStripes" patternUnits="userSpaceOnUse" width="40" height="80">
@@ -39,34 +39,34 @@ export function TentCard({ shop }: TentCardProps) {
             </defs>
             {/* Tent shape with scalloped bottom edge */}
             <path
-              d="M0,80 L200,5 L400,80 L380,80 Q370,65 360,80 Q350,65 340,80 Q330,65 320,80 Q310,65 300,80 Q290,65 280,80 Q270,65 260,80 Q250,65 240,80 Q230,65 220,80 Q210,65 200,80 Q190,65 180,80 Q170,65 160,80 Q150,65 140,80 Q130,65 120,80 Q110,65 100,80 Q90,65 80,80 Q70,65 60,80 Q50,65 40,80 Q30,65 20,80 Z"
+              d="M0,80 L0,0 L400,0 L400,80 L380,80 Q370,65 360,80 Q350,65 340,80 Q330,65 320,80 Q310,65 300,80 Q290,65 280,80 Q270,65 260,80 Q250,65 240,80 Q230,65 220,80 Q210,65 200,80 Q190,65 180,80 Q170,65 160,80 Q150,65 140,80 Q130,65 120,80 Q110,65 100,80 Q90,65 80,80 Q70,65 60,80 Q50,65 40,80 Q30,65 20,80 Z"
               fill="url(#tentStripes)"
             />
-            {/* Tent top pole */}
-            <circle cx="200" cy="5" r="8" fill="#92400e" />
+            {/* Tent top pole - removed as it doesn't make sense in full width */}
+            {/* <circle cx="200" cy="5" r="8" fill="#92400e" /> */}
           </svg>
         </div>
 
         {/* Shop name banner hanging from canopy */}
         <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-30">
-          <div className="bg-amber-100 border-2 border-amber-700 px-4 py-1.5 rounded shadow-md">
-            <h2 className="text-sm font-bold text-amber-900 whitespace-nowrap">{shop.name}</h2>
+          <div className="bg-green-50 border-2 border-green-800 px-4 py-1.5 rounded shadow-md">
+            <h2 className="text-sm font-bold text-green-900 whitespace-nowrap">{shop.name}</h2>
           </div>
         </div>
       </div>
 
       {/* Tent body - the "stall" interior with products */}
-      <div className="relative bg-gradient-to-b from-green-50 to-white border-x-4 border-b-4 border-amber-700 rounded-b-lg shadow-xl mt-0 overflow-hidden">
+      <div className="relative min-h-[calc(100vh-100px)] bg-gradient-to-b from-green-50 to-white border-x-4 border-b-4 border-green-800 rounded-b-lg shadow-xl mt-0 overflow-hidden">
         {/* Wooden shelf/table effect at top */}
         <div className="h-2 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
 
         {/* Products masonry grid inside tent */}
-        <div className="p-3 pt-6">
-          <div className="grid grid-cols-3 auto-rows-[60px] gap-2">
+        <div className="px-96 py-3 pt-6">
+          <div className="grid grid-cols-3 auto-rows-[60px] gap-3">
             {shop.products.map((product, index) => (
               <div
                 key={product.id}
-                className={`${getSizeClass(index)} relative rounded-lg overflow-hidden bg-white border border-border shadow-sm group`}
+                className={`${getSizeClass(index)} relative rounded-xl overflow-hidden bg-white border border-border shadow-sm group`}
               >
                 <img
                   src={product.image || "/placeholder.svg"}

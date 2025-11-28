@@ -26,27 +26,29 @@ export function ShopSwiper() {
     shuffleShops()
   }, [shuffleShops])
 
-  const handleSwipeLeft = () => {
+  const handleSwipeLeft = useCallback(() => {
     if (shopQueue.length > 0) {
       setCurrentShop(shopQueue[0])
       setShopQueue((prev) => prev.slice(1))
     } else {
       setCurrentShop(null)
     }
-  }
+  }, [shopQueue])
 
-  const handleSwipeRight = () => {
+  const handleSwipeRight = useCallback(() => {
     if (currentShop) {
       setSelectedShop(currentShop)
       setViewingProducts(true)
     }
-  }
+  }, [currentShop])
 
   const handleBackToShops = () => {
     setViewingProducts(false)
     setSelectedShop(null)
     handleSwipeLeft()
   }
+
+
 
   if (viewingProducts && selectedShop) {
     return <ProductSwiper shop={selectedShop} onBack={handleBackToShops} />
@@ -73,8 +75,8 @@ export function ShopSwiper() {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-4 pt-6">
+    <div className="h-full flex flex-col relative">
+      <div className="flex-1 flex items-start justify-center">
         <SwipeCard
           key={currentShop.id}
           onSwipeLeft={handleSwipeLeft}
@@ -87,7 +89,7 @@ export function ShopSwiper() {
       </div>
 
       {/* Smaller action buttons */}
-      <div className="flex justify-center gap-6 pb-4">
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-6 z-50">
         <button
           onClick={handleSwipeLeft}
           className="w-12 h-12 rounded-full bg-card border-2 border-destructive/30 flex items-center justify-center shadow-md hover:scale-105 transition-transform"

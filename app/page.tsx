@@ -115,6 +115,22 @@ function TentPage() {
     }
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (viewingProducts) return
+
+      if (e.key === "ArrowLeft") {
+        handleNextShop()
+      } else if (e.key === "ArrowRight") {
+        setTentColorIndex((prev) => (prev + 1) % tentColorSchemes.length)
+        handleViewProducts()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [shopQueue, viewingProducts]) // Dependencies for the effect
+
   // Mouse handlers for desktop swipe
   const handleMouseDown = (e: React.MouseEvent) => {
     touchStartX.current = e.clientX
@@ -191,7 +207,7 @@ function TentPage() {
       {/* Main Swipeable Container (Roof + Stall) */}
       <div
         ref={contentRef}
-        className="flex-1 flex flex-col relative cursor-grab active:cursor-grabbing select-none pb-24" // Added padding bottom for fixed navbar
+        className="flex-1 flex flex-col relative cursor-grab active:cursor-grabbing select-none" // Added padding bottom for fixed navbar
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -206,12 +222,12 @@ function TentPage() {
         }}
       >
         {/* 3D Roof Section */}
-        <div className="relative z-10 mx-auto w-full max-w-md perspective-[1000px] mt-4">
+        <div className="relative z-10 w-full perspective-[1000px]">
           <div
             className="transform-style-3d rotate-x-12 origin-bottom transition-transform duration-300"
             style={{ transform: "rotateX(10deg) scale(1.05)" }}
           >
-            <svg viewBox="0 0 400 100" className="w-full h-auto drop-shadow-2xl" preserveAspectRatio="none">
+            <svg viewBox="0 0 400 100" className="w-full h-[100px] drop-shadow-2xl" preserveAspectRatio="none">
               <defs>
                 <pattern id="tentStripes" patternUnits="userSpaceOnUse" width="40" height="100">
                   <rect width="20" height="100" fill={tentColorSchemes[tentColorIndex].primary} />
@@ -224,7 +240,7 @@ function TentPage() {
               </defs>
               {/* Main canopy with scalloped bottom */}
               <path
-                d="M20,10 L380,10 L400,80 Q390,95 380,80 Q370,95 360,80 Q350,95 340,80 Q330,95 320,80 Q310,95 300,80 Q290,95 280,80 Q270,95 260,80 Q250,95 240,80 Q230,95 220,80 Q210,95 200,80 Q190,95 180,80 Q170,95 160,80 Q150,95 140,80 Q130,95 120,80 Q110,95 100,80 Q90,95 80,80 Q70,95 60,80 Q50,95 40,80 Q30,95 20,80 L0,80 L20,10 Z"
+                d="M0,0 L400,0 L400,80 Q390,95 380,80 Q370,95 360,80 Q350,95 340,80 Q330,95 320,80 Q310,95 300,80 Q290,95 280,80 Q270,95 260,80 Q250,95 240,80 Q230,95 220,80 Q210,95 200,80 Q190,95 180,80 Q170,95 160,80 Q150,95 140,80 Q130,95 120,80 Q110,95 100,80 Q90,95 80,80 Q70,95 60,80 Q50,95 40,80 Q30,95 20,80 L0,80 L0,0 Z"
                 fill="url(#tentStripes)"
               />
               {/* Shadow overlay for depth */}
@@ -242,7 +258,13 @@ function TentPage() {
         </div>
 
         {/* Stall Body & Product Grid */}
-        <div className="flex-1 mx-auto w-full max-w-md bg-amber-50/50 border-x-8 border-amber-800/20 shadow-2xl backdrop-blur-sm -mt-6 pt-10 pb-4 px-2">
+        <div
+          className="flex-1 w-full shadow-2xl backdrop-blur-sm -mt-6 pt-10 pb-4 px-96 border-x-8"
+          style={{
+            backgroundColor: tentColorSchemes[tentColorIndex].secondary,
+            borderColor: `${tentColorSchemes[tentColorIndex].primary}33` // ~20% opacity
+          }}
+        >
 
           {/* Shop Info Header */}
           <div className="mb-4 px-2 text-center">
@@ -257,11 +279,11 @@ function TentPage() {
           </div>
 
           {/* Masonry Grid */}
-          <div className="grid grid-cols-3 auto-rows-[100px] gap-0 grid-flow-dense">
+          <div className="grid grid-cols-3 auto-rows-[100px] gap-3 grid-flow-dense">
             {currentShop.products.map((product, index) => (
               <div
                 key={product.id}
-                className={`${getHeightClass(index)} relative border border-amber-900/10 bg-white overflow-hidden group transition-all hover:z-10 hover:shadow-lg`}
+                className={`${getHeightClass(index)} relative border border-amber-900/10 bg-white overflow-hidden group transition-all hover:z-10 hover:shadow-lg rounded-xl`}
               >
                 <img
                   src={product.image || "/placeholder.svg"}

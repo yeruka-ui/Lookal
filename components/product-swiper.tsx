@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Shop } from "@/lib/mock-data"
 import { useCart } from "@/lib/cart-context"
 import { SwipeCard } from "./swipe-card"
@@ -43,6 +43,8 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   const handleSwipeUp = () => {
     setShowDetail(true)
   }
+
+
 
   if (!hasMoreProducts) {
     return (

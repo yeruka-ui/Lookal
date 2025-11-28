@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, useMotionValue, useTransform, type PanInfo } from "framer-motion"
 
 interface SwipeCardProps {
@@ -59,6 +59,26 @@ export function SwipeCard({
     }
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (exitDirection) return
+
+      if (e.key === "ArrowLeft") {
+        setExitDirection("left")
+        setTimeout(onSwipeLeft, 200)
+      } else if (e.key === "ArrowRight") {
+        setExitDirection("right")
+        setTimeout(onSwipeRight, 200)
+      } else if (e.key === "ArrowUp" && onSwipeUp) {
+        setExitDirection("up")
+        setTimeout(onSwipeUp, 200)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [exitDirection, onSwipeLeft, onSwipeRight, onSwipeUp])
+
   const exitVariants = {
     left: { x: -500, opacity: 0, transition: { duration: 0.3 } },
     right: { x: 500, opacity: 0, transition: { duration: 0.3 } },
@@ -68,7 +88,7 @@ export function SwipeCard({
   return (
     <div ref={constraintsRef} className="relative w-full h-full flex items-center justify-center">
       <motion.div
-        className="absolute w-full max-w-sm cursor-grab active:cursor-grabbing"
+        className="absolute w-full cursor-grab active:cursor-grabbing"
         style={{ x, y, rotateZ, scale }}
         drag
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
