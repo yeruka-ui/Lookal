@@ -1,0 +1,106 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useRef } from "react"
+import { motion, useMotionValue, useTransform, type PanInfo } from "framer-motion"
+
+interface SwipeCardProps {
+  children: React.ReactNode
+  onSwipeLeft: () => void
+  onSwipeRight: () => void
+  onSwipeUp?: () => void
+  leftLabel?: string
+  rightLabel?: string
+  upLabel?: string
+}
+
+export function SwipeCard({
+  children,
+  onSwipeLeft,
+  onSwipeRight,
+  onSwipeUp,
+  leftLabel = "SKIP",
+  rightLabel = "VIEW",
+  upLabel = "DETAILS",
+}: SwipeCardProps) {
+  const [exitDirection, setExitDirection] = useState<"left" | "right" | "up" | null>(null)
+  const constraintsRef = useRef(null)
+
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+
+  const rotateZ = useTransform(x, [-200, 200], [-15, 15])
+  const opacityLeft = useTransform(x, [-150, -50, 0], [1, 0.5, 0])
+  const opacityRight = useTransform(x, [0, 50, 150], [0, 0.5, 1])
+  const opacityUp = useTransform(y, [-150, -50, 0], [1, 0.5, 0])
+  const scale = useTransform([x, y], ([latestX, latestY]: number[]) => {
+    const distance = Math.sqrt(latestX ** 2 + latestY ** 2)
+    return Math.max(0.95, 1 - distance / 2000)
+  })
+
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    const threshold = 100
+    const velocityThreshold = 500
+
+    const isSwipeLeft = info.offset.x < -threshold || info.velocity.x < -velocityThreshold
+    const isSwipeRight = info.offset.x > threshold || info.velocity.x > velocityThreshold
+    const isSwipeUp = info.offset.y < -threshold || info.velocity.y < -velocityThreshold
+
+    if (isSwipeUp && onSwipeUp && Math.abs(info.offset.y) > Math.abs(info.offset.x)) {
+      setExitDirection("up")
+      setTimeout(onSwipeUp, 200)
+    } else if (isSwipeLeft) {
+      setExitDirection("left")
+      setTimeout(onSwipeLeft, 200)
+    } else if (isSwipeRight) {
+      setExitDirection("right")
+      setTimeout(onSwipeRight, 200)
+    }
+  }
+
+  const exitVariants = {
+    left: { x: -500, opacity: 0, transition: { duration: 0.3 } },
+    right: { x: 500, opacity: 0, transition: { duration: 0.3 } },
+    up: { y: -500, opacity: 0, transition: { duration: 0.3 } },
+  }
+
+  return (
+    <div ref={constraintsRef} className="relative w-full h-full flex items-center justify-center">
+      <motion.div
+        className="absolute w-full max-w-sm cursor-grab active:cursor-grabbing"
+        style={{ x, y, rotateZ, scale }}
+        drag
+        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+        dragElastic={0.9}
+        onDragEnd={handleDragEnd}
+        animate={exitDirection ? exitVariants[exitDirection] : {}}
+        whileTap={{ scale: 0.98 }}
+      >
+        {/* Swipe indicators */}
+        <motion.div
+          className="absolute -left-4 top-1/2 -translate-y-1/2 bg-destructive text-destructive-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10"
+          style={{ opacity: opacityLeft }}
+        >
+          {leftLabel}
+        </motion.div>
+        <motion.div
+          className="absolute -right-4 top-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10"
+          style={{ opacity: opacityRight }}
+        >
+          {rightLabel}
+        </motion.div>
+        {onSwipeUp && (
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2 -top-4 bg-accent text-accent-foreground px-3 py-2 rounded-lg font-semibold text-sm z-10"
+            style={{ opacity: opacityUp }}
+          >
+            {upLabel}
+          </motion.div>
+        )}
+
+        {children}
+      </motion.div>
+    </div>
+  )
+}
