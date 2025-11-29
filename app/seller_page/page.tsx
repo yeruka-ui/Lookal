@@ -94,81 +94,47 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header - Similar to Homepage */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-4 md:px-8 lg:px-32 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-black text-primary tracking-tight">My Store</h1>
-            <p className="text-xs text-muted-foreground font-medium">Manage your products</p>
-          </div>
-          <Link
-            href="seller_pending_orders/"
-            className="relative p-2 rounded-full hover:bg-secondary transition-colors"
-            title="Pending Orders"
-          >
-            <MessageCircle className="w-6 h-6 text-foreground" />
-            {pendingOrdersCount > 0 && (
-              <span className="absolute top-0 right-0 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                {pendingOrdersCount}
-              </span>
-            )}
-          </Link>
-        </div>
+    <div className="min-h-screen bg-background dotted-bg relative">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+        {/* Store Header with Description Edit and Order Status */}
+        <StoreHeader pendingOrdersCount={pendingOrdersCount} />
 
-        {/* Mini Dashboard - Compact for Header */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-card rounded-lg p-3 border border-border">
-            <p className="text-xs text-muted-foreground mb-1">Products</p>
-            <p className="text-lg font-bold text-foreground">{products.length}</p>
-          </div>
-          <div className="bg-card rounded-lg p-3 border border-border">
-            <p className="text-xs text-muted-foreground mb-1">In Stock</p>
-            <p className="text-lg font-bold text-green-600">{products.filter(p => p.stock > 0).length}</p>
-          </div>
-          <div className="bg-card rounded-lg p-3 border border-border">
-            <p className="text-xs text-muted-foreground mb-1">Orders</p>
-            <p className="text-lg font-bold text-primary">{pendingOrdersCount}</p>
-          </div>
-        </div>
+        {/* Mini Dashboard */}
+        <MiniDashboard products={products} pendingOrdersCount={pendingOrdersCount} />
 
-        {/* Sort Filter */}
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-bold text-foreground">Your Products</h2>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 rounded-lg bg-secondary/50 border-none focus:ring-2 focus:ring-primary/20 text-xs font-medium text-foreground"
-          >
-            <option value="date">Newest</option>
-            <option value="price-low">Price: Low</option>
-            <option value="price-high">Price: High</option>
-            <option value="stock">Stock</option>
-          </select>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="px-4 md:px-8 lg:px-32 py-6">
         {/* Loading State */}
         {isLoading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-muted-foreground text-sm">Loading products...</p>
-            </div>
+          <div className="flex justify-center items-center py-12">
+            <p className="text-foreground/60">Loading products...</p>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-6">
-            <p className="text-destructive font-medium">{error}</p>
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6">
+            <p className="text-destructive">{error}</p>
           </div>
         )}
 
-        {/* Product Grid - Consistent with Homepage */}
+        {/* Main Content */}
         {!isLoading && !error && (
+          <main className="mt-8">
+            <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-foreground">Your Products</h2>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-foreground/60">Sort By:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="px-3 py-2 rounded-md bg-card border border-primary/20 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="date">Date Added</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="stock">Stock Level</option>
+              </select>
+            </div>
+          </div>
           <ProductGrid
             products={getSortedProducts()}
             onProductClick={(product) => {
@@ -176,28 +142,27 @@ export default function Page() {
               setIsDetailModalOpen(true)
             }}
           />
+          </main>
         )}
-      </main>
+      </div>
 
-      {/* Floating Action Buttons */}
       <Link
         href="seller_chat/"
-        className="fixed bottom-24 right-4 md:right-6 w-12 h-12 rounded-full bg-card border-2 border-primary text-primary shadow-lg flex items-center justify-center hover:shadow-xl transition-all hover:scale-105 z-40"
+        className="fixed bottom-24 right-6 w-12 h-12 rounded-full bg-card border-2 border-primary text-primary shadow-md flex items-center justify-center hover:shadow-lg transition-shadow z-40"
         title="Messages"
       >
-        <MessageCircle className="w-5 h-5" />
-        <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-primary rounded-full"></span>
+        <MessageCircle className="w-6 h-6" />
+        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-primary rounded-full"></span>
       </Link>
 
       <button
         onClick={() => setIsAddModalOpen(true)}
-        className="fixed bottom-6 right-4 md:right-6 w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl flex items-center justify-center transition-all hover:scale-110 z-40"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg flex items-center justify-center text-2xl transition-transform hover:scale-110 z-40"
         title="Add new product"
       >
         <Plus className="w-7 h-7" />
       </button>
 
-      {/* Modals */}
       <AddProductModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddProduct} />
 
       {selectedProduct && (

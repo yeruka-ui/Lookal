@@ -57,7 +57,7 @@ export async function createOrder(order: OrderInsert): Promise<Order> {
 /**
  * Update order status
  */
-export async function updateOrderStatus(id: string, status: 'pending' | 'confirmed' | 'preparing' | 'on_the_way' | 'delivered' | 'shipped'): Promise<Order> {
+export async function updateOrderStatus(id: string, status: 'pending' | 'confirmed' | 'shipped'): Promise<Order> {
     const { data, error } = await supabase
         .from('orders')
         .update({ status })

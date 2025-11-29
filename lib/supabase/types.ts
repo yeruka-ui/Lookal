@@ -42,7 +42,7 @@ export interface Database {
                     product_name: string
                     quantity: number
                     price: number
-                    status: 'pending' | 'confirmed' | 'preparing' | 'on_the_way' | 'delivered' | 'shipped'
+                    status: 'pending' | 'confirmed' | 'shipped'
                     order_date: string
                     created_at: string
                 }
@@ -54,7 +54,7 @@ export interface Database {
                     product_name: string
                     quantity: number
                     price: number
-                    status?: 'pending' | 'confirmed' | 'preparing' | 'on_the_way' | 'delivered' | 'shipped'
+                    status?: 'pending' | 'confirmed' | 'shipped'
                     order_date?: string
                     created_at?: string
                 }
@@ -66,7 +66,7 @@ export interface Database {
                     product_name?: string
                     quantity?: number
                     price?: number
-                    status?: 'pending' | 'confirmed' | 'preparing' | 'on_the_way' | 'delivered' | 'shipped'
+                    status?: 'pending' | 'confirmed' | 'shipped'
                     order_date?: string
                     created_at?: string
                 }

@@ -20,7 +20,7 @@ export function BottomNav({ onCartOpen }: BottomNavProps) {
     const currentView = pathname === "/" ? "home"
         : pathname.startsWith("/explore") ? "explore"
         : pathname.startsWith("/marketplace") ? "marketplace"
-        : pathname.startsWith("/seller_page") ? "account"
+        : pathname.startsWith("/account") ? "account"
         : ""
 
     const handleNavigate = (path: string) => {
@@ -70,7 +70,7 @@ export function BottomNav({ onCartOpen }: BottomNavProps) {
                     )}
                 </button>
 
-                <button onClick={() => handleNavigate("/seller_page")} className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${currentView === "account" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}>
+                <button onClick={() => handleNavigate("/account")} className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${currentView === "account" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}>
                     <User className="w-5 h-5" />
                 </button>
             </div>
