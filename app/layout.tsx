@@ -34,6 +34,8 @@ export default function RootLayout({
             <UIProvider>
               {/* These two components enable the notification system globally */}
               <NotificationListener /> 
+              {/* These two components enable the notification system globally */}
+              <NotificationListener /> 
               <MainLayoutWrapper>
                 {children}
               </MainLayoutWrapper>

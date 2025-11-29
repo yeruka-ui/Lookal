@@ -54,12 +54,12 @@ export function SellerProductCard({ product, onClick }: SellerProductCardProps) 
           {product.name}
         </h3>
 
-        {/* Barter Value and Stock Row */}
+        {/* Price and Stock Row */}
         <div className="flex items-center justify-between">
-          <div className="flex flex-col flex-1">
-            <span className="text-xs text-muted-foreground font-medium mb-1">Barter For:</span>
-            <span className="text-sm font-bold text-green-600 leading-tight">
-              {product.description || 'Open to offers'}
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Price</span>
+            <span className="text-xl font-bold text-primary">
+              ${product.price.toFixed(2)}
             </span>
           </div>
           
@@ -74,6 +74,13 @@ export function SellerProductCard({ product, onClick }: SellerProductCardProps) 
             </span>
           </div>
         </div>
+
+        {/* Description Preview */}
+        {product.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 pt-2 border-t border-border">
+            {product.description}
+          </p>
+        )}
       </div>
 
       {/* Hover Overlay */}

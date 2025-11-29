@@ -23,7 +23,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
     const [isLoading, setIsLoading] = useState(true)
     const { totalItems } = useCart()
 
-    // Filter States (from klyde4)
+    // Filter States
     const [isFilterOpen, setIsFilterOpen] = useState(false)
     const [sortBy, setSortBy] = useState<"rating" | "name" | null>(null)
     const [selectedLocation, setSelectedLocation] = useState<string | null>(null)
@@ -57,9 +57,12 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
     // Extract all unique categories and locations
     const categories = Array.from(new Set(allShops.map((s) => s.category)))
     const locations = Array.from(new Set(allShops.map((s) => s.location)))
+    // // Extract all unique categories and locations
+    // const categories = Array.from(new Set(shops.map((s) => s.category)))
+    // const locations = Array.from(new Set(shops.map((s) => s.location)))
 
-    // Filter shops based on search, category, and location (enhanced from klyde4)
-    const filteredShops = allShops
+    // Filter shops based on search, category, and location
+    const filteredShops = shops
         .filter((shop) => {
             const matchesSearch = shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 shop.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -74,7 +77,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
         })
 
     // Get all products for the "Just For You" section
-    const allProducts = allShops.flatMap((shop) =>
+    const allProducts = shops.flatMap((shop) =>
         shop.products.map((product) => ({ ...product, shopName: shop.name, shopId: shop.id }))
     ).sort(() => Math.random() - 0.5).slice(0, 10) // Random mix
 
