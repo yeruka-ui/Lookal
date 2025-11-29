@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useSocket } from "@/lib/socket-context"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 export function NotificationListener() {
     const { socket, currentUserId } = useSocket()
@@ -14,43 +14,49 @@ export function NotificationListener() {
     useEffect(() => {
         if (!socket || !currentUserId) return
 
-        // 1. Handle Chat Messages
+        // 1. Handle Chat Messages (New Messages within a Negotiation)
         const handleChatMessage = (data: any) => {
-            if (data.recipientId !== currentUserId) return
-            if (pathname === `/chat/${data.tradeId}`) return // Don't notify if already looking at it
+            // 1. If I am the SENDER, IGNORE the message (it's the echo)
+            if (data.senderId === currentUserId) return
 
-            toast({
-                title: "New Message",
-                description: "You received a new message.",
-                duration: 4000,
-                action: (
-                    <button 
-                        className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-bold hover:bg-primary/90"
-                        onClick={() => router.push(`/chat/${data.tradeId}?other_id=${data.senderId}`)}
-                    >
-                        Reply
-                    </button>
-                )
-            })
+            // 2. If I am the RECIPIENT, proceed to check if I should be notified
+            if (data.recipientId === currentUserId) {
+                const isViewingChat = pathname === `/chat/${data.tradeId}`
+                
+                // If I am NOT viewing the chat, show a notification
+                if (!isViewingChat) { 
+                    toast({
+                        title: "New Message",
+                        description: `You received a message in negotiation #${data.tradeId.slice(-4)}`,
+                        duration: 5000,
+                        action: (
+                            <button 
+                                className="bg-primary text-primary-foreground px-3 py-2 rounded-md text-xs font-bold hover:bg-primary/90 transition-colors"
+                                onClick={() => router.push(`/chat/${data.tradeId}?other_id=${data.senderId}`)}
+                            >
+                                Reply
+                            </button>
+                        )
+                    })
+                }
+            }
         }
 
-        // 2. Handle New Trade Proposals (FIXED: Added this handler)
+        // 2. Handle New Trade Proposals (The initial Request)
         const handleTradeProposal = (data: any) => {
-            // Only notify the shop owner
+            // Only notify the shop owner about the initial listing
             if (data.shopOwnerId !== currentUserId) return
             
             // Don't toast if already on marketplace page
             if (pathname === '/marketplace') return
 
-            console.log("🔔 Trade Proposal Notification:", data)
-
             toast({
                 title: "New Trade Request",
-                description: `Someone wants to trade for your ${data.items[0]?.name || 'items'}!`,
+                description: `A customer listed a trade request for your ${data.items[0]?.name || 'items'}!`,
                 duration: 5000,
                 action: (
                     <button 
-                        className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-bold hover:bg-primary/90"
+                        className="bg-primary text-primary-foreground px-3 py-2 rounded-md text-xs font-bold hover:bg-primary/90 transition-colors"
                         onClick={() => router.push('/marketplace')}
                     >
                         View
