@@ -13,7 +13,7 @@ const _dmSans = DM_Sans({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "LocalMart - Swipe to Shop Local",
+  title: "Lookal",
   description: "Discover and support local entrepreneurs with a swipe",
     generator: 'v0.app'
 }
