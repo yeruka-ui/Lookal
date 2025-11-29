@@ -9,6 +9,7 @@ import { UIProvider } from "@/lib/ui-context"
 import { SocketProvider } from "@/lib/socket-context"
 import { Toaster } from "@/components/ui/toaster" // Import Toaster
 import { NotificationListener } from "@/components/notification-listener" // Import Listener
+import { DevToolbar } from "@/components/dev-toolbar"
 
 const geist = Geist({ subsets: ["latin"] })
 const geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -36,6 +37,7 @@ export default function RootLayout({
               <MainLayoutWrapper>
                 {children}
               </MainLayoutWrapper>
+              <DevToolbar />
               <Toaster />
             </UIProvider>
           </CartProvider>
