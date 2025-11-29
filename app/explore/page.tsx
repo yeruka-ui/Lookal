@@ -100,7 +100,7 @@ function ShopExploreView() {
 
     const handleNextShop = () => {
         const exitX = swipeOffset < 0 ? -500 : swipeOffset > 0 ? 500 : 0
-        
+
         setSwipeOffset(exitX)
         setTentColorIndex((prev) => (prev + 1) % tentColorSchemes.length)
 
@@ -190,7 +190,7 @@ function ShopExploreView() {
         // Only allow horizontal swipes for navigation
         if (Math.abs(diffX) > Math.abs(diffY)) {
             setSwipeOffset(diffX)
-        } 
+        }
         // Logic for vertical swipe (exit) has been removed as requested
     }
 

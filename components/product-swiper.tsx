@@ -21,7 +21,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
 
   const currentProduct = shop.products[productIndex]
   const hasMoreProducts = productIndex < shop.products.length
-  
+
   const totalProducts = shop.products.length;
   const progressValue = ((productIndex + 1) / totalProducts) * 100;
 
@@ -75,40 +75,39 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background z-50">
-      
+
       {/* NEW HEADER: Progress Bar and Controls (Bumble/Tinder Style) */}
       <div className="flex flex-col p-4 pb-2 border-b border-border bg-card">
-          <div className="flex items-center justify-between mb-2">
-              <button
-                  onClick={onBack}
-                  className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
-                  title="Back to shops"
-              >
-                  <ArrowLeft className="w-4 h-4" />
-              </button>
+        <div className="flex items-center justify-between mb-2">
+          <button
+            onClick={onBack}
+            className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
+            title="Back to shops"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
 
-              <div className="flex-1 text-center">
-                  <h2 className="text-sm font-bold text-foreground">{shop.name}</h2>
-                  <p className="text-xs text-muted-foreground">Product {productIndex + 1} of {totalProducts}</p>
-              </div>
-
-              {/* Rewind Button (Backtrack for accidental skip) */}
-              <button
-                  onClick={handleRewind}
-                  disabled={productIndex === 0}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-opacity ${
-                      productIndex > 0 
-                          ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' 
-                          : 'bg-secondary text-muted-foreground opacity-50 cursor-not-allowed'
-                  }`}
-                  title="Rewind (Undo Last Skip)"
-              >
-                  <RotateCcw className="w-4 h-4" />
-              </button>
+          <div className="flex-1 text-center">
+            <h2 className="text-sm font-bold text-foreground">{shop.name}</h2>
+            <p className="text-xs text-muted-foreground">Product {productIndex + 1} of {totalProducts}</p>
           </div>
-          
-          {/* Progress Bar */}
-          <Progress value={progressValue} className="h-1.5" />
+
+          {/* Rewind Button (Backtrack for accidental skip) */}
+          <button
+            onClick={handleRewind}
+            disabled={productIndex === 0}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-opacity ${productIndex > 0
+                ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
+                : 'bg-secondary text-muted-foreground opacity-50 cursor-not-allowed'
+              }`}
+            title="Rewind (Undo Last Skip)"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Progress Bar */}
+        <Progress value={progressValue} className="h-1.5" />
       </div>
 
       {/* Product card */}
