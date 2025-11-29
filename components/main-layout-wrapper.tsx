@@ -15,9 +15,8 @@ export function MainLayoutWrapper({
 }: {
     children: React.ReactNode
 }) {
-    const [cartOpen, setCartOpen] = useState(false)
     const [checkoutOpen, setCheckoutOpen] = useState(false)
-    const { isFullScreenMode } = useUI()
+    const { isFullScreenMode, isCartOpen, setCartOpen } = useUI()
     const { totalItems } = useCart()
     const pathname = usePathname()
 
@@ -51,7 +50,7 @@ export function MainLayoutWrapper({
             )}
 
             <CartSheet
-                open={cartOpen}
+                open={isCartOpen}
                 onClose={() => setCartOpen(false)}
                 onCheckout={handleCheckout}
             />
