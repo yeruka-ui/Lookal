@@ -11,6 +11,39 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Initialize Gemini Client
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
+const AVAILABLE_TAGS = [
+  { "tag": "Streetwear", "color": "zinc" },
+  { "tag": "Vintage", "color": "amber" },
+  { "tag": "Kicks", "color": "red" },
+  { "tag": "Luxury", "color": "stone" },
+  { "tag": "Accessories", "color": "fuchsia" },
+  { "tag": "Activewear", "color": "lime" },
+  { "tag": "Upcycled", "color": "teal" },
+  { "tag": "Apple", "color": "slate" },
+  { "tag": "Gaming", "color": "violet" },
+  { "tag": "Audio", "color": "indigo" },
+  { "tag": "Photography", "color": "neutral" },
+  { "tag": "Computers", "color": "sky" },
+  { "tag": "Tools", "color": "orange" },
+  { "tag": "Decor", "color": "rose" },
+  { "tag": "Plants", "color": "emerald" },
+  { "tag": "Furniture", "color": "yellow" },
+  { "tag": "Kitchen", "color": "cyan" },
+  { "tag": "Books", "color": "blue" },
+  { "tag": "Vinyl & Music", "color": "purple" },
+  { "tag": "Pet Gear", "color": "pink" },
+  { "tag": "Skills", "color": "blue" },
+  { "tag": "Services", "color": "sky" },
+  { "tag": "Collectibles", "color": "purple" },
+  { "tag": "Sports", "color": "orange" },
+  { "tag": "Camping", "color": "green" },
+  { "tag": "Vehicles", "color": "gray" },
+  { "tag": "Beauty", "color": "pink" },
+  { "tag": "Kids", "color": "yellow" },
+  { "tag": "Freecycle", "color": "teal" },
+  { "tag": "ISO", "color": "red" }
+];
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -33,19 +66,46 @@ export async function POST(req: NextRequest) {
 
     // 2. Parallel Execution
     const [aiResult, storageResult] = await Promise.all([
-      // Task A: AI Description
+      // Task A: AI Description & Tags
       (async () => {
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        const model = genAI.getGenerativeModel({ 
+            model: 'gemini-2.0-flash',
+            generationConfig: { responseMimeType: "application/json" }
+        });
         const imagePart = {
           inlineData: {
             data: base64Image,
             mimeType: mimeType,
           },
         };
-        const prompt = "You are an e-commerce copywriter. Write a persuasive, 2-sentence description of this product based on its visual features.";
+        
+        const tagsList = AVAILABLE_TAGS.map(t => t.tag).join(", ");
+        const prompt = `
+            You are an e-commerce expert. 
+            1. Write a persuasive, 2-sentence description of this product based on its visual features.
+            2. Select the best 1-3 tags from this list: ${tagsList}.
+            
+            Return a JSON object with this structure:
+            {
+                "description": "string",
+                "tags": ["tag1", "tag2"]
+            }
+        `;
+        
         const result = await model.generateContent([prompt, imagePart]);
         const response = await result.response;
-        return response.text();
+        const jsonResponse = JSON.parse(response.text());
+        
+        // Map tags back to their full objects with colors
+        const enrichedTags = jsonResponse.tags.map((tagName: string) => {
+            const found = AVAILABLE_TAGS.find(t => t.tag.toLowerCase() === tagName.toLowerCase());
+            return found || { tag: tagName, color: "gray" };
+        });
+
+        return {
+            description: jsonResponse.description,
+            tags: enrichedTags
+        };
       })(),
 
       // Task B: Image Generation & Upload
@@ -120,10 +180,6 @@ export async function POST(req: NextRequest) {
         }
 
         // Upload Final Image (Generated or Original fallback)
-        // If generated, we upload it. If fallback, we can return the original URL directly 
-        // OR upload the original buffer again with a new name. 
-        // To keep logic simple and consistent with the original snippet:
-        
         if (isGenerated) {
              const timestamp = Date.now();
              const sanitizedTitle = title.replace(/[^a-zA-Z0-9-_]/g, '');
@@ -153,7 +209,8 @@ export async function POST(req: NextRequest) {
     // 3. Response
     return NextResponse.json({
       title,
-      ai_description: aiResult,
+      ai_description: aiResult.description,
+      tags: aiResult.tags,
       image_url: storageResult.url,
       is_generated_image: storageResult.is_generated,
       fallback_reason: storageResult.fallback_reason

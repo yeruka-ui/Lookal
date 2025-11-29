@@ -21,6 +21,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
     description: "",
     stock: "1", // Default to 1 for bartering
     image: "",
+    tags: [] as any[], // Store tags
   })
 
   // AI Modal State
@@ -93,6 +94,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
         description: aiResult.ai_description,
         image: aiResult.image_url,
         name: aiResult.title !== "Untitled Product" ? aiResult.title : "",
+        tags: aiResult.tags || [],
       }))
       setImagePreview(aiResult.image_url)
       setStep("form")
@@ -114,10 +116,11 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
       description: formData.description,
       stock: 1, // Default to 1
       image: formData.image || "/diverse-products-still-life.png",
+      // tags: formData.tags // Pass tags if the parent component accepts them
     })
 
     // Reset
-    setFormData({ name: "", description: "", stock: "1", image: "" })
+    setFormData({ name: "", description: "", stock: "1", image: "", tags: [] })
     setImagePreview("")
     setImageFile(null)
     setStep("upload")
@@ -127,6 +130,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
     setStep("upload")
     setImagePreview("")
     setImageFile(null)
+    setFormData({ name: "", description: "", stock: "1", image: "", tags: [] })
     onClose()
   }
 
@@ -262,6 +266,48 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     className="w-full px-4 py-3 border-none rounded-xl bg-secondary/50 text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
                   />
                 </div>
+
+                {/* Tags Display */}
+                {formData.tags && formData.tags.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-bold text-foreground mb-2">Tags</label>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag: any, index: number) => {
+                         const colorMap: Record<string, string> = {
+                            zinc: "bg-zinc-100 text-zinc-800 border-zinc-200",
+                            amber: "bg-amber-100 text-amber-800 border-amber-200",
+                            red: "bg-red-100 text-red-800 border-red-200",
+                            stone: "bg-stone-100 text-stone-800 border-stone-200",
+                            fuchsia: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
+                            lime: "bg-lime-100 text-lime-800 border-lime-200",
+                            teal: "bg-teal-100 text-teal-800 border-teal-200",
+                            slate: "bg-slate-100 text-slate-800 border-slate-200",
+                            violet: "bg-violet-100 text-violet-800 border-violet-200",
+                            indigo: "bg-indigo-100 text-indigo-800 border-indigo-200",
+                            neutral: "bg-neutral-100 text-neutral-800 border-neutral-200",
+                            sky: "bg-sky-100 text-sky-800 border-sky-200",
+                            orange: "bg-orange-100 text-orange-800 border-orange-200",
+                            rose: "bg-rose-100 text-rose-800 border-rose-200",
+                            emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
+                            yellow: "bg-yellow-100 text-yellow-800 border-yellow-200",
+                            cyan: "bg-cyan-100 text-cyan-800 border-cyan-200",
+                            blue: "bg-blue-100 text-blue-800 border-blue-200",
+                            purple: "bg-purple-100 text-purple-800 border-purple-200",
+                            pink: "bg-pink-100 text-pink-800 border-pink-200",
+                            green: "bg-green-100 text-green-800 border-green-200",
+                            gray: "bg-gray-100 text-gray-800 border-gray-200",
+                         };
+                         const colorClass = colorMap[tag.color] || "bg-secondary text-foreground border-border";
+                         
+                         return (
+                            <span key={index} className={`px-3 py-1 rounded-full text-xs font-bold border ${colorClass}`}>
+                                {tag.tag}
+                            </span>
+                         )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Submit Button */}
                 <Button
