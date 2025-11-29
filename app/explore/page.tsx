@@ -10,6 +10,8 @@ import { ProductSwiper } from "@/components/product-swiper"
 import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
 import { ShoppingCart, Star, MapPin, X, Eye, MessageCircle, ChevronUp, BadgeCheck, Store, ArrowDown } from "lucide-react"
+import { getProductsInStock } from "@/lib/supabase/products"
+import { createShopFromSupabaseProducts, getStoreName } from "@/lib/product-adapter"
 
 // Tent color schemes
 const tentColorSchemes = [
@@ -39,6 +41,9 @@ function ShopExploreView() {
 
     const { totalItems } = useCart()
 
+    const [allShops, setAllShops] = useState<Shop[]>(shops)
+const [isLoadingShops, setIsLoadingShops] = useState(true)
+
     // Swipe & Scroll refs
     const touchStartX = useRef(0)
     const touchStartY = useRef(0)
@@ -46,21 +51,50 @@ function ShopExploreView() {
     const scrollRef = useRef<HTMLDivElement>(null)
     const loadMoreRef = useRef<HTMLDivElement>(null)
 
-    const shuffleShops = useCallback(() => {
-        const shuffled = [...shops].sort(() => Math.random() - 0.5)
-        setShopQueue(shuffled.slice(1))
-        setCurrentShop(shuffled[0])
-
-        // Create enough items to force scroll
-        if (shuffled[0]) {
-            const baseProducts = shuffled[0].products
-            const filledProducts = Array(6).fill(baseProducts).flat()
-            setDisplayedProducts(filledProducts)
+useEffect(() => {
+    async function fetchSupabaseProducts() {
+        try {
+            setIsLoadingShops(true)
+            const supabaseProducts = await getProductsInStock()
+            
+            if (supabaseProducts.length > 0) {
+                const supabaseShop = createShopFromSupabaseProducts(supabaseProducts, getStoreName())
+                setAllShops([supabaseShop, ...shops])
+            } else {
+                setAllShops(shops)
+            }
+        } catch (error) {
+            console.error('Error fetching Supabase products:', error)
+            setAllShops(shops)
+        } finally {
+            setIsLoadingShops(false)
         }
+    }
 
-        setViewingProducts(false)
-        setIsZooming(false)
-    }, [])
+    fetchSupabaseProducts()
+}, [])
+
+const shuffleShops = useCallback(() => {
+    const shuffled = [...allShops].sort(() => Math.random() - 0.5)
+    setShopQueue(shuffled.slice(1))
+    setCurrentShop(shuffled[0])
+
+    // Create enough items to force scroll
+    if (shuffled[0]) {
+        const baseProducts = shuffled[0].products
+        const filledProducts = Array(6).fill(baseProducts).flat()
+        setDisplayedProducts(filledProducts)
+    }
+
+    setViewingProducts(false)
+    setIsZooming(false)
+}, [allShops])
+
+useEffect(() => {
+    if (!isLoadingShops) {
+        shuffleShops()
+    }
+}, [isLoadingShops, shuffleShops])
 
     useEffect(() => {
         shuffleShops()
