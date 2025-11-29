@@ -28,17 +28,17 @@ export function BottomNav({ onCartOpen }: BottomNavProps) {
         router.push(path)
     }
 
+    // Only listen for "Trade Proposals" here (for the red dot on Marketplace tab)
     useEffect(() => {
         if(!socket) return;
         const handleProposal = (data: any) => {
-            // FIX: Only show red dot if I am the SHOP OWNER (Recipient), not the proposer
             if (data.shopOwnerId === currentUserId) {
                 setHasNotification(true);
             }
         };
         socket.on("trade_proposed", handleProposal);
         return () => { socket.off("trade_proposed", handleProposal) }
-    }, [socket, currentUserId]) // Added currentUserId dependency
+    }, [socket, currentUserId])
 
     return (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
@@ -52,7 +52,6 @@ export function BottomNav({ onCartOpen }: BottomNavProps) {
                     <Compass className="w-5 h-5" />
                 </button>
 
-                {/* Marketplace with Red Dot Logic */}
                 <button
                     onClick={() => handleNavigate("/marketplace")}
                     className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${currentView === "marketplace" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}

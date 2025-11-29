@@ -1,5 +1,3 @@
-// yeruka-ui/lookal/klyde2/app/layout.tsx
-
 import type React from "react"
 import type { Metadata } from "next"
 import { DM_Sans, Geist_Mono } from "next/font/google"
@@ -7,8 +5,10 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { CartProvider } from "@/lib/cart-context"
 import { MainLayoutWrapper } from "@/components/main-layout-wrapper"
-import { UIProvider } from "@/lib/ui-context" // <-- ADDED
-import { SocketProvider } from "@/lib/socket-context" // Import the new provider
+import { UIProvider } from "@/lib/ui-context"
+import { SocketProvider } from "@/lib/socket-context"
+import { Toaster } from "@/components/ui/toaster"
+import { NotificationListener } from "@/components/notification-listener" // NEW
 
 const _dmSans = DM_Sans({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -27,15 +27,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <SocketProvider> {/* <--- Add this wrapper */}
+        <SocketProvider>
           <CartProvider>
             <UIProvider>
+              <NotificationListener /> {/* NEW: Global Listener */}
               <MainLayoutWrapper>
                 {children}
               </MainLayoutWrapper>
+              <Toaster />
             </UIProvider>
           </CartProvider>
-        </SocketProvider> {/* <--- Close it here */}
+        </SocketProvider>
         <Analytics />
       </body>
     </html>

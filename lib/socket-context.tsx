@@ -9,16 +9,26 @@ interface ServerToClientEvents {
   trade_status_updated: (data: any) => void
   trade_proposed: (data: any) => void
   marketplace_history: (data: any[]) => void
-  chat_history: (data: any[]) => void // NEW
+  chat_history: (data: any[]) => void
+  display_typing: (data: { tradeId: string; isTyping: boolean }) => void // NEW
 }
 
 interface ClientToServerEvents {
-  send_trade_message: (data: any) => void
+  send_trade_message: (data: { 
+    tradeId: string; 
+    senderId: string; 
+    recipientId: string; 
+    message: string; 
+    attachment?: string; 
+    attachmentType?: 'image' | 'video'; // NEW
+    timestamp?: number 
+  }) => void
   update_trade_status: (data: any) => void
   authenticate_user: (userId: string) => void
   propose_trade: (data: any) => void
   get_trades: (userId: string) => void
-  get_chat_history: (tradeId: string) => void // NEW
+  get_chat_history: (tradeId: string) => void
+  typing: (data: { recipientId: string; tradeId: string; isTyping: boolean }) => void // NEW
 }
 
 type SocketType = Socket<ServerToClientEvents, ClientToServerEvents> | null

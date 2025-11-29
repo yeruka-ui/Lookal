@@ -4,7 +4,6 @@ import 'dotenv/config';
 
 const PORT = process.env.SOCKET_PORT || 3001;
 
-// --- 1. Define Data Structures ---
 interface TradeProposal {
   tradeId: string;
   proposerId: string;
@@ -20,28 +19,27 @@ interface ChatMessage {
   senderId: string;
   recipientId: string;
   timestamp: number;
+  attachment?: string; // Base64 Image
 }
 
-// --- 2. In-Memory Storage ---
 const trades: TradeProposal[] = []; 
-const messages: ChatMessage[] = []; // NEW: Store all chat messages here
+const messages: ChatMessage[] = []; 
 const usersMap = new Map<string, string>(); 
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+  maxHttpBufferSize: 1e7 // 10MB limit (kept for high-res images)
 });
 
 io.on('connection', (socket) => {
   
-  // -- Auth --
   socket.on('authenticate_user', (userId: string) => {
       socket.data.userId = userId;
       usersMap.set(userId, socket.id);
       console.log(`User connected: ${userId}`);
   });
 
-  // -- Marketplace Logic (Existing) --
   socket.on('get_trades', (userId: string) => {
       const userTrades = trades.filter(t => 
           t.proposerId === userId || t.shopOwnerId === userId
@@ -60,30 +58,32 @@ io.on('connection', (socket) => {
       socket.emit('trade_proposed', proposalData);
   });
 
-  // -- Chat Logic (UPDATED) --
-
-  // NEW: Fetch Chat History
   socket.on('get_chat_history', (tradeId: string) => {
-      // Filter messages for this specific trade
       const history = messages.filter(m => m.tradeId === tradeId);
-      // Send back to the user who asked
       socket.emit('chat_history', history);
+  });
+
+  socket.on('typing', (data: { recipientId: string, tradeId: string, isTyping: boolean }) => {
+      const recipientSocketId = usersMap.get(data.recipientId);
+      if (recipientSocketId) {
+          io.to(recipientSocketId).emit('display_typing', {
+              tradeId: data.tradeId,
+              isTyping: data.isTyping
+          });
+      }
   });
 
   socket.on('send_trade_message', (data: any) => {
       const messageData: ChatMessage = { ...data, timestamp: Date.now() };
       
-      // 1. SAVE to Memory (Fixes "Clears on Refresh" & "Late Joiner")
       messages.push(messageData);
 
-      // 2. Send to Recipient (if online)
       const recipientSocketId = usersMap.get(data.recipientId);
       if (recipientSocketId) {
           io.to(recipientSocketId).emit('receive_trade_message', messageData);
-          // Optional: Send a 'notification' event here if you want a global red dot for chats too
       }
       
-      // 3. Echo back to Sender (for immediate UI update)
+      // Echo back to sender
       socket.emit('receive_trade_message', messageData);
   });
 
@@ -95,5 +95,5 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`✅ Socket.IO Server running on port ${PORT}`);
-}); 
+  console.log(`✅ Socket.IO Marketplace Server running on port ${PORT}`);
+});
