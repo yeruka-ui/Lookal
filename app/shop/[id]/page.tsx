@@ -1,17 +1,48 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
-import { shops, type Shop } from "@/lib/mock-data"
+import { type Shop } from "@/lib/mock-data"
+import { loadAllShops } from "@/lib/shop-loader"
 import { ArrowLeft, Star, MapPin, BadgeCheck, MessageCircle, Store } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function ShopPage() {
     const params = useParams()
     const router = useRouter()
     const shopId = params.id as string
 
-    // Find shop
-    const shop = shops.find(s => s.id === shopId)
+    // State management
+    const [shop, setShop] = useState<Shop | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Load all shops (including Supabase) and find the matching one
+    useEffect(() => {
+        async function fetchShop() {
+            try {
+                setIsLoading(true)
+                const allShops = await loadAllShops()
+                const foundShop = allShops.find(s => s.id === shopId)
+                setShop(foundShop || null)
+            } catch (error) {
+                console.error('Error loading shop:', error)
+                setShop(null)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchShop()
+    }, [shopId])
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-8">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-muted-foreground font-medium mt-4">Loading shop...</p>
+            </div>
+        )
+    }
 
     if (!shop) {
         return (
