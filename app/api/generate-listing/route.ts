@@ -12,36 +12,56 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
 const AVAILABLE_TAGS = [
-  { "tag": "Streetwear", "color": "zinc" },
-  { "tag": "Vintage", "color": "amber" },
-  { "tag": "Kicks", "color": "red" },
-  { "tag": "Luxury", "color": "stone" },
-  { "tag": "Accessories", "color": "fuchsia" },
-  { "tag": "Activewear", "color": "lime" },
-  { "tag": "Upcycled", "color": "teal" },
-  { "tag": "Apple", "color": "slate" },
-  { "tag": "Gaming", "color": "violet" },
-  { "tag": "Audio", "color": "indigo" },
-  { "tag": "Photography", "color": "neutral" },
-  { "tag": "Computers", "color": "sky" },
-  { "tag": "Tools", "color": "orange" },
-  { "tag": "Decor", "color": "rose" },
-  { "tag": "Plants", "color": "emerald" },
-  { "tag": "Furniture", "color": "yellow" },
-  { "tag": "Kitchen", "color": "cyan" },
-  { "tag": "Books", "color": "blue" },
-  { "tag": "Vinyl & Music", "color": "purple" },
-  { "tag": "Pet Gear", "color": "pink" },
-  { "tag": "Skills", "color": "blue" },
-  { "tag": "Services", "color": "sky" },
-  { "tag": "Collectibles", "color": "purple" },
-  { "tag": "Sports", "color": "orange" },
-  { "tag": "Camping", "color": "green" },
-  { "tag": "Vehicles", "color": "gray" },
-  { "tag": "Beauty", "color": "pink" },
-  { "tag": "Kids", "color": "yellow" },
-  { "tag": "Freecycle", "color": "teal" },
-  { "tag": "ISO", "color": "red" }
+  { "tag": "Streetwear", "color": "zinc-600" },
+  { "tag": "Vintage", "color": "amber-500" },
+  { "tag": "Kicks", "color": "red-500" },
+  { "tag": "Luxury", "color": "stone-500" },
+  { "tag": "Accessories", "color": "fuchsia-500" },
+  { "tag": "Activewear", "color": "lime-500" },
+  { "tag": "Upcycled", "color": "teal-500" },
+  { "tag": "Apple", "color": "slate-500" },
+  { "tag": "Gaming", "color": "violet-500" },
+  { "tag": "Audio", "color": "indigo-500" },
+  { "tag": "Photography", "color": "neutral-500" },
+  { "tag": "Computers", "color": "sky-500" },
+  { "tag": "Tools", "color": "orange-500" },
+  { "tag": "Decor", "color": "rose-400" },
+  { "tag": "Plants", "color": "emerald-500" },
+  { "tag": "Furniture", "color": "yellow-500" },
+  { "tag": "Kitchen", "color": "cyan-500" },
+  { "tag": "Books", "color": "blue-500" },
+  { "tag": "Vinyl & Music", "color": "purple-500" },
+  { "tag": "Pet Gear", "color": "pink-400" },
+  { "tag": "Skills", "color": "blue-400" },
+  { "tag": "Services", "color": "sky-400" },
+  { "tag": "Collectibles", "color": "purple-400" },
+  { "tag": "Sports", "color": "orange-400" },
+  { "tag": "Camping", "color": "green-500" },
+  { "tag": "Vehicles", "color": "gray-500" },
+  { "tag": "Beauty", "color": "pink-500" },
+  { "tag": "Kids", "color": "yellow-400" },
+  { "tag": "Freecycle", "color": "teal-400" },
+  { "tag": "ISO", "color": "red-400" },
+  { "tag": "Handmade", "color": "orange-400" },
+  { "tag": "Art Supplies", "color": "fuchsia-400" },
+  { "tag": "Instruments", "color": "amber-600" },
+  { "tag": "Tabletop Games", "color": "red-400" },
+  { "tag": "Smart Home", "color": "cyan-400" },
+  { "tag": "Wearables", "color": "lime-400" },
+  { "tag": "Tickets", "color": "green-400" },
+  { "tag": "Office", "color": "slate-400" },
+  { "tag": "Textbooks", "color": "stone-400" },
+  { "tag": "Comics", "color": "violet-400" },
+  { "tag": "Anime", "color": "pink-300" },
+  { "tag": "Fitness Gear", "color": "zinc-500" },
+  { "tag": "Travel", "color": "sky-300" },
+  { "tag": "Materials", "color": "neutral-400" },
+  { "tag": "Maternity", "color": "rose-300" },
+  { "tag": "Party Supplies", "color": "purple-300" },
+  { "tag": "Gift Cards", "color": "emerald-400" },
+  { "tag": "Watches", "color": "gray-600" },
+  { "tag": "Grooming", "color": "teal-300" },
+  { "tag": "Rentals", "color": "indigo-400" }
 ];
 
 export async function POST(req: NextRequest) {
@@ -64,10 +84,10 @@ export async function POST(req: NextRequest) {
     const base64Image = buffer.toString('base64');
     const mimeType = file.type;
 
-    // 2. Parallel Execution
-    const [aiResult, storageResult] = await Promise.all([
-      // Task A: AI Description & Tags
-      (async () => {
+    // 2. Parallel Execution Setup
+    
+    // Task A: Gemini Analysis (Description & Tags only)
+    const geminiPromise = (async () => {
         const model = genAI.getGenerativeModel({ 
             model: 'gemini-2.0-flash',
             generationConfig: { responseMimeType: "application/json" }
@@ -106,18 +126,10 @@ export async function POST(req: NextRequest) {
             description: jsonResponse.description,
             tags: enrichedTags
         };
-      })(),
+    })();
 
-      // Task B: Image Generation & Upload
-      (async () => {
-        let imageBuffer = buffer;
-        let finalMimeType = mimeType;
-        let isGenerated = false;
-        let fallbackReason = null;
-        let originalImageUrl = null;
-
-        try {
-          // 0. Upload Original Image First
+    // Task B: Upload Original Image
+    const uploadOriginalPromise = (async () => {
           const timestamp = Date.now();
           const sanitizedTitle = title.replace(/[^a-zA-Z0-9-_]/g, '');
           const originalFilename = `original-${sanitizedTitle}-${timestamp}.png`;
@@ -135,78 +147,22 @@ export async function POST(req: NextRequest) {
             .from('productImage')
             .getPublicUrl(originalFilename);
 
-          originalImageUrl = publicUrlData.publicUrl;
+          return publicUrlData.publicUrl;
+    })();
 
-          // Step 1: Analyze original image
-          const visionModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-          const analysisPrompt = "Describe the visual appearance of this product in extreme detail. Focus on exact shape, colors, materials. Do not describe the background.";
+    // 3. Wait for Analysis and Upload
+    const [aiResult, originalImageUrl] = await Promise.all([geminiPromise, uploadOriginalPromise]);
 
-          const visionImagePart = {
-            inlineData: {
-              data: base64Image,
-              mimeType: mimeType,
-            },
-          };
+    // 4. Generate Enhanced Image (CSS Only)
+    // User Request: "ditch the image generation and opt for css image improvement"
+    // We strictly return the original image. The visual enhancement is handled by CSS in the frontend.
+    const storageResult = { 
+        url: originalImageUrl, 
+        is_generated: false, 
+        fallback_reason: "CSS Enhancement Mode" 
+    };
 
-          const analysisResult = await visionModel.generateContent([analysisPrompt, visionImagePart]);
-          const productDescription = (await analysisResult.response).text();
-
-          console.log("Product Analysis:", productDescription);
-
-          // Step 2: Generate new image using Pollinations.ai (Image-to-Image)
-          const imagePrompt = `Cinematic product photography of ${title}. ${productDescription}. Dramatic studio lighting, rim lighting, 8k, photorealistic. KEEP ORIGINAL GEOMETRY.`;
-          
-          console.log("Generating image with prompt:", imagePrompt);
-
-          const encodedPrompt = encodeURIComponent(imagePrompt);
-          const encodedImage = encodeURIComponent(originalImageUrl);
-          const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true&image=${encodedImage}`;
-
-          const response = await fetch(pollinationsUrl);
-
-          if (!response.ok) {
-            throw new Error(`Pollinations API failed with status: ${response.status}`);
-          }
-
-          const generatedArrayBuffer = await response.arrayBuffer();
-          imageBuffer = Buffer.from(generatedArrayBuffer);
-          finalMimeType = 'image/jpeg';
-          isGenerated = true;
-
-        } catch (genError: any) {
-          console.error("Image generation failed, falling back to original image:", genError.message);
-          // Fallback to original buffer and mimeType (already set)
-          fallbackReason = genError.message;
-        }
-
-        // Upload Final Image (Generated or Original fallback)
-        if (isGenerated) {
-             const timestamp = Date.now();
-             const sanitizedTitle = title.replace(/[^a-zA-Z0-9-_]/g, '');
-             const filename = `${sanitizedTitle}-${timestamp}.jpg`; // Pollinations returns JPEGs usually
-
-             const { error } = await supabase.storage
-               .from('productImage')
-               .upload(filename, imageBuffer, {
-                 contentType: finalMimeType,
-                 upsert: true
-               });
-
-             if (error) throw error;
-
-             const { data: publicUrlData } = supabase.storage
-               .from('productImage')
-               .getPublicUrl(filename);
-             
-             return { url: publicUrlData.publicUrl, is_generated: true, fallback_reason: null };
-        } else {
-             // Return original URL
-             return { url: originalImageUrl, is_generated: false, fallback_reason: fallbackReason };
-        }
-      })(),
-    ]);
-
-    // 3. Response
+    // 5. Response
     return NextResponse.json({
       title,
       ai_description: aiResult.description,
