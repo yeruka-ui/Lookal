@@ -7,12 +7,8 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { CartProvider } from "@/lib/cart-context"
 import { MainLayoutWrapper } from "@/components/main-layout-wrapper"
-<<<<<<< HEAD
 import { UIProvider } from "@/lib/ui-context"
-=======
-import { UIProvider } from "@/lib/ui-context" // <-- ADDED
-import { SocketProvider } from "@/lib/socket-context" // Import the new provider
->>>>>>> klyde4
+import { SocketProvider } from "@/lib/socket-context"
 
 const geist = Geist({ subsets: ["latin"] })
 const geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -31,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <SocketProvider> {/* <--- Add this wrapper */}
+        <SocketProvider>
           <CartProvider>
             <UIProvider>
               <MainLayoutWrapper>
@@ -39,7 +35,7 @@ export default function RootLayout({
               </MainLayoutWrapper>
             </UIProvider>
           </CartProvider>
-        </SocketProvider> {/* <--- Close it here */}
+        </SocketProvider>
         <Analytics />
       </body>
     </html>
