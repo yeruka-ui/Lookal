@@ -6,8 +6,8 @@ import { useCart } from "@/lib/cart-context"
 import { SwipeCard } from "./swipe-card"
 import { ProductCard } from "./product-card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress" // ADDED
-import { ArrowLeft, Check, Package, RotateCcw } from "lucide-react" // Added RotateCcw
+import { Progress } from "@/components/ui/progress"
+import { ArrowLeft, Check, Package, RotateCcw } from "lucide-react"
 
 interface ProductSwiperProps {
   shop: Shop
@@ -31,12 +31,13 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
 
   const handleSwipeRight = () => {
     if (currentProduct && currentProduct.inStock) {
+      console.log("Adding item to barter list:", currentProduct.name)
       addItem(currentProduct, shop)
       setAddedToCart(currentProduct.id)
       setTimeout(() => {
         setAddedToCart(null)
         setProductIndex((prev) => prev + 1)
-      }, 500)
+      }, 300)
     } else {
       setProductIndex((prev) => prev + 1)
     }
@@ -97,8 +98,8 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
             onClick={handleRewind}
             disabled={productIndex === 0}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-opacity ${productIndex > 0
-                ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
-                : 'bg-secondary text-muted-foreground opacity-50 cursor-not-allowed'
+              ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
+              : 'bg-secondary text-muted-foreground opacity-50 cursor-not-allowed'
               }`}
             title="Rewind (Undo Last Skip)"
           >
@@ -118,7 +119,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
                 <Check className="w-6 h-6" />
               </div>
-              <span className="font-bold text-lg">Added to cart!</span>
+              <span className="font-bold text-lg">Added to List!</span>
             </div>
           </div>
         )}

@@ -168,7 +168,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                                 <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded-lg">
-                                    ${product.price.toFixed(0)}
+                                    Barter
                                 </div>
                             </div>
                             <div className="p-3">

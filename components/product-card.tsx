@@ -2,7 +2,6 @@
 
 import type { Product } from "@/lib/mock-data"
 import { MessageCircle, Check } from "lucide-react"
-import { toast } from "sonner" // Assuming sonner is installed as per components.json, or use basic alert
 
 interface ProductCardProps {
   product: Product
@@ -13,7 +12,7 @@ export function ProductCard({ product, shopName }: ProductCardProps) {
 
   const handleHaggle = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent swipe interference
-    const message = `Hi ${shopName}, I'm interested in the ${product.name}. Is the price negotiable?`
+    const message = `Hi ${shopName}, I'm interested in the ${product.name}. Would you consider a trade?`
 
     // Simulate opening a chat window
     // In a real app, this would route to /chat/[id] with a query param
@@ -69,9 +68,10 @@ export function ProductCard({ product, shopName }: ProductCardProps) {
               {shopName}
             </p>
           </div>
-          <div className="flex flex-col items-end">
-            <span className="text-4xl font-black text-green-400 tracking-tighter drop-shadow-md">
-              ${product.price.toFixed(0)}
+          <div className="flex flex-col items-end max-w-[40%]">
+            <span className="text-sm font-bold text-gray-300 mb-1">Barter For:</span>
+            <span className="text-xl font-black text-green-400 tracking-tighter drop-shadow-md text-right leading-tight">
+              {product.barterValue}
             </span>
           </div>
         </div>
