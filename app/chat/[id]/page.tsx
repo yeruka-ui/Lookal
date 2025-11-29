@@ -1,150 +1,185 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { shops } from "@/lib/mock-data"
-import { ArrowLeft, Send, Phone, Video, MoreVertical, Image as ImageIcon, Smile } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useSocket } from "@/lib/socket-context" 
+import { ArrowLeft, Send, Image as ImageIcon, X } from "lucide-react" // Removed Phone, Video imports
+import { motion } from "framer-motion"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 
 interface Message {
-    id: string
-    text: string
-    sender: "user" | "shop"
-    timestamp: Date
+    tradeId: string
+    message: string
+    senderId: string
+    timestamp: number
+    attachment?: string
 }
 
 export default function ChatRoomPage() {
     const params = useParams()
+    const searchParams = useSearchParams()
     const router = useRouter()
-    const shopId = params.id as string
-    const shop = shops.find(s => s.id === shopId)
+    
+    const { socket, currentUserId } = useSocket() 
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const tradeId = params.id as string
+    const recipientId = searchParams.get('other_id')
 
     const [messages, setMessages] = useState<Message[]>([])
     const [inputValue, setInputValue] = useState("")
-    const [isTyping, setIsTyping] = useState(false)
-    const messagesEndRef = useRef<HTMLDivElement>(null)
-
-    // Initialize with some mock messages
-    useEffect(() => {
-        if (shop) {
-            setMessages([
-                {
-                    id: "1",
-                    text: `Hi! Welcome to ${shop.name}. How can we help you today?`,
-                    sender: "shop",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 60) // 1 hour ago
-                }
-            ])
-        }
-    }, [shop])
-
-    // Auto-scroll to bottom
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    }
+    const [selectedFile, setSelectedFile] = useState<string | null>(null)
+    
+    const [isOtherUserTyping, setIsOtherUserTyping] = useState(false)
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const [previewImage, setPreviewImage] = useState<string | null>(null)
 
     useEffect(() => {
-        scrollToBottom()
-    }, [messages, isTyping])
+        if (!socket || !tradeId) return
 
-    const handleSendMessage = (e?: React.FormEvent) => {
-        e?.preventDefault()
-        if (!inputValue.trim()) return
+        socket.emit("get_chat_history", tradeId)
 
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            text: inputValue,
-            sender: "user",
-            timestamp: new Date()
+        const handleHistory = (history: any[]) => {
+            const sorted = history.sort((a, b) => a.timestamp - b.timestamp)
+            setMessages(sorted)
         }
 
-        setMessages(prev => [...prev, newMessage])
-        setInputValue("")
-        setIsTyping(true)
+        const handleLiveMessage = (data: any) => {
+            if(data.tradeId !== tradeId) return;
+            setMessages((prev) => [...prev, data])
+            setIsOtherUserTyping(false) 
+        }
 
-        // Mock shop reply
-        setTimeout(() => {
-            const reply: Message = {
-                id: (Date.now() + 1).toString(),
-                text: "That sounds like a great offer! Let me check our inventory.",
-                sender: "shop",
-                timestamp: new Date()
+        const handleTyping = (data: { tradeId: string, isTyping: boolean }) => {
+            if (data.tradeId === tradeId) {
+                setIsOtherUserTyping(data.isTyping)
             }
-            setMessages(prev => [...prev, reply])
-            setIsTyping(false)
-        }, 2000)
+        }
+
+        socket.on("chat_history", handleHistory)
+        socket.on("receive_trade_message", handleLiveMessage)
+        socket.on("display_typing", handleTyping)
+
+        return () => {
+            socket.off("chat_history", handleHistory)
+            socket.off("receive_trade_message", handleLiveMessage)
+            socket.off("display_typing", handleTyping)
+        }
+    }, [socket, tradeId])
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, [messages, isOtherUserTyping])
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInputValue(e.target.value)
+
+        if (socket && recipientId) {
+            socket.emit("typing", { recipientId, tradeId, isTyping: true })
+            
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+            typingTimeoutRef.current = setTimeout(() => {
+                socket.emit("typing", { recipientId, tradeId, isTyping: false })
+            }, 1000)
+        }
     }
 
-    if (!shop) return <div className="p-8 text-center">Shop not found</div>
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Image is too large! Max 5MB allowed.")
+                return
+            }
+
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setSelectedFile(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleSendMessage = (e: React.FormEvent) => {
+        e.preventDefault()
+        if ((!inputValue.trim() && !selectedFile) || !socket || !recipientId || !currentUserId) return
+
+        const payload = {
+            tradeId,
+            senderId: currentUserId,
+            recipientId: recipientId,
+            message: inputValue,
+            attachment: selectedFile || undefined,
+            timestamp: Date.now()
+        }
+
+        socket.emit("send_trade_message", payload)
+        
+        setInputValue("")
+        setSelectedFile(null)
+        if (fileInputRef.current) fileInputRef.current.value = ""
+        socket.emit("typing", { recipientId, tradeId, isTyping: false })
+    }
 
     return (
         <div className="flex flex-col h-screen bg-background">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => router.back()}
-                        className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
+            <div className="p-4 border-b border-border bg-background flex items-center justify-between shadow-sm z-10">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-secondary rounded-full transition-colors">
+                        <ArrowLeft className="w-6 h-6"/>
                     </button>
-
-                    <div className="relative">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border border-border">
-                            <img src={shop.image} alt={shop.name} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></span>
-                    </div>
-
                     <div>
-                        <h2 className="font-semibold text-sm leading-tight">{shop.name}</h2>
-                        <p className="text-xs text-green-600 font-medium">Online</p>
+                        <h1 className="font-bold text-foreground">Trade Negotiation</h1>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">ID: {tradeId.slice(-4)}</span>
+                            {isOtherUserTyping && (
+                                <span className="text-xs text-primary font-medium animate-pulse">typing...</span>
+                            )}
+                        </div>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-1">
-                    <button className="p-2 rounded-full hover:bg-secondary text-muted-foreground transition-colors">
-                        <Phone className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full hover:bg-secondary text-muted-foreground transition-colors">
-                        <Video className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full hover:bg-secondary text-muted-foreground transition-colors">
-                        <MoreVertical className="w-5 h-5" />
-                    </button>
-                </div>
+                {/* REMOVED VIDEO/PHONE ICONS HERE */}
             </div>
 
-            {/* Messages Area */}
+            {/* Messages List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-secondary/10">
-                {messages.map((msg) => (
-                    <motion.div
-                        key={msg.id}
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                        <div
-                            className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${msg.sender === "user"
-                                    ? "bg-primary text-primary-foreground rounded-br-none"
-                                    : "bg-white border border-border rounded-bl-none"
-                                }`}
-                        >
-                            <p>{msg.text}</p>
-                            <p className={`text-[10px] mt-1 text-right ${msg.sender === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
-                                }`}>
-                                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                        </div>
-                    </motion.div>
-                ))}
+                {messages.length === 0 && (
+                    <div className="text-center text-muted-foreground text-sm py-10 opacity-50">
+                        <p>No messages yet.</p>
+                        <p>Start the conversation or send an image!</p>
+                    </div>
+                )}
 
-                {isTyping && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex justify-start"
-                    >
+                {messages.map((msg, i) => {
+                    const isMe = msg.senderId === currentUserId;
+                    return (
+                        <motion.div 
+                            key={i} 
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                            className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                        >
+                            <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${isMe ? "bg-primary text-primary-foreground rounded-br-none" : "bg-white border border-border rounded-bl-none"}`}>
+                                {msg.attachment && (
+                                    <div 
+                                        className="mb-2 rounded-lg overflow-hidden border border-black/10 cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() => setPreviewImage(msg.attachment!)}
+                                    >
+                                        <img src={msg.attachment} alt="Attachment" className="max-w-full h-auto max-h-60 object-cover" />
+                                    </div>
+                                )}
+                                {msg.message && <p className="whitespace-pre-wrap">{msg.message}</p>}
+                                <p className={`text-[10px] mt-1 text-right opacity-70`}>
+                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                        </motion.div>
+                    )
+                })}
+
+                {isOtherUserTyping && (
+                    <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
                         <div className="bg-white border border-border px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex gap-1 items-center">
                             <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                             <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -156,36 +191,66 @@ export default function ChatRoomPage() {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-background border-t border-border">
-                <form
-                    onSubmit={handleSendMessage}
-                    className="flex items-center gap-2 bg-secondary/50 p-1.5 pr-2 rounded-full border border-border focus-within:ring-2 focus-within:ring-primary/20 transition-all"
-                >
-                    <button type="button" className="p-2 rounded-full hover:bg-secondary text-muted-foreground transition-colors">
+            <div className="p-4 border-t border-border bg-background">
+                {selectedFile && (
+                    <div className="relative inline-block mb-3 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="relative rounded-xl overflow-hidden border border-border h-24 w-24 bg-secondary">
+                            <img src={selectedFile} alt="Preview" className="w-full h-full object-cover" />
+                            <button 
+                                onClick={() => { setSelectedFile(null); if(fileInputRef.current) fileInputRef.current.value = ""; }}
+                                className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white rounded-full p-1"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileSelect} 
+                        className="hidden" 
+                        accept="image/*"
+                    />
+                    <button 
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-3 rounded-full hover:bg-secondary text-muted-foreground transition-colors mb-1"
+                        title="Attach image"
+                    >
                         <ImageIcon className="w-5 h-5" />
                     </button>
-
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Type a message..."
-                        className="flex-1 bg-transparent border-none focus:outline-none text-sm px-2"
-                    />
-
-                    <button type="button" className="p-2 rounded-full hover:bg-secondary text-muted-foreground transition-colors">
-                        <Smile className="w-5 h-5" />
-                    </button>
-
-                    <button
-                        type="submit"
-                        disabled={!inputValue.trim()}
-                        className="p-2 rounded-full bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all shadow-sm"
+                    <div className="flex-1 bg-secondary rounded-2xl px-4 py-3 min-h-[44px]">
+                        <input 
+                            className="w-full bg-transparent text-sm focus:outline-none"
+                            placeholder="Type a message..."
+                            value={inputValue}
+                            onChange={handleInputChange} 
+                        />
+                    </div>
+                    <button 
+                        type="submit" 
+                        disabled={(!inputValue.trim() && !selectedFile)}
+                        className="p-3 bg-primary text-primary-foreground rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all mb-1 shadow-sm"
                     >
                         <Send className="w-4 h-4" />
                     </button>
                 </form>
             </div>
+
+            <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+                <DialogContent className="max-w-3xl p-0 overflow-hidden bg-transparent border-none shadow-none flex items-center justify-center">
+                    {previewImage && (
+                        <img 
+                            src={previewImage} 
+                            alt="Full Preview" 
+                            className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

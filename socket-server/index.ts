@@ -1,95 +1,93 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import 'dotenv/config'; // Use dotenv for config
+import 'dotenv/config';
 
 const PORT = process.env.SOCKET_PORT || 3001;
 
-// --- Custom Type Definitions for Clarity ---
-
-interface ServerToClientEvents {
-  receive_trade_message: (data: { tradeId: string; senderId: string; message: string; timestamp: number }) => void;
-  trade_status_updated: (data: { tradeId: string; newStatus: 'Proposed' | 'Counter' | 'Confirmed' | 'Rejected'; actorId: string }) => void;
-  user_connected: (userId: string) => void;
+interface TradeProposal {
+  tradeId: string;
+  proposerId: string;
+  shopOwnerId: string;
+  items: { name: string; quantity: number }[];
+  offerDetails: string;
+  timestamp: number;
 }
 
-interface ClientToServerEvents {
-  send_trade_message: (data: { tradeId: string; senderId: string; recipientId: string; message: string }) => void;
-  update_trade_status: (data: { tradeId: string; newStatus: 'Proposed' | 'Counter' | 'Confirmed' | 'Rejected'; actorId: string; recipientId: string }) => void;
-  authenticate_user: (userId: string) => void; 
+interface ChatMessage {
+  tradeId: string;
+  message: string;
+  senderId: string;
+  recipientId: string;
+  timestamp: number;
+  attachment?: string; // Base64 Image
 }
 
-interface InterServerEvents {}
-interface SocketData {
-  userId: string;
-}
-
-// Map to store userId to socketId for direct messaging
+const trades: TradeProposal[] = []; 
+const messages: ChatMessage[] = []; 
 const usersMap = new Map<string, string>(); 
 
-// --- Server Initialization ---
-
 const httpServer = createServer();
-
-// Initialize the Socket.IO server
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
-  httpServer,
-  {
-    // Crucial for allowing connection from your Next.js app running on a different port (e.g., 3000)
-    cors: {
-      origin: '*', // For hackathon: allows any origin; tighten this in production.
-      methods: ['GET', 'POST']
-    }
-  }
-);
-
-// --- Connection and Event Handling ---
+const io = new Server(httpServer, {
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+  maxHttpBufferSize: 1e7 // 10MB limit (kept for high-res images)
+});
 
 io.on('connection', (socket) => {
   
-  // 1. Authenticate and Map User to Socket ID
   socket.on('authenticate_user', (userId: string) => {
       socket.data.userId = userId;
       usersMap.set(userId, socket.id);
-      console.log(`User ${userId} authenticated and mapped to ${socket.id}`);
-      // In a real app, you might only emit this to the user's active devices:
-      // io.emit('user_connected', userId); 
+      console.log(`User connected: ${userId}`);
   });
 
-  // 2. Real-Time Trade Negotiation Chat
-  socket.on('send_trade_message', (data) => {
-      const messageData = {
-          ...data,
-          timestamp: Date.now()
-      };
+  socket.on('get_trades', (userId: string) => {
+      const userTrades = trades.filter(t => 
+          t.proposerId === userId || t.shopOwnerId === userId
+      );
+      socket.emit('marketplace_history', userTrades);
+  });
 
-      // Find recipient's socket ID for targeted delivery (Private Message)
+  socket.on('propose_trade', (data: TradeProposal) => {
+      const proposalData = { ...data, timestamp: Date.now() };
+      trades.push(proposalData); 
+
+      const shopSocketId = usersMap.get(data.shopOwnerId);
+      if (shopSocketId) {
+          io.to(shopSocketId).emit('trade_proposed', proposalData);
+      }
+      socket.emit('trade_proposed', proposalData);
+  });
+
+  socket.on('get_chat_history', (tradeId: string) => {
+      const history = messages.filter(m => m.tradeId === tradeId);
+      socket.emit('chat_history', history);
+  });
+
+  socket.on('typing', (data: { recipientId: string, tradeId: string, isTyping: boolean }) => {
       const recipientSocketId = usersMap.get(data.recipientId);
+      if (recipientSocketId) {
+          io.to(recipientSocketId).emit('display_typing', {
+              tradeId: data.tradeId,
+              isTyping: data.isTyping
+          });
+      }
+  });
 
-      // Emit to the recipient (other party)
+  socket.on('send_trade_message', (data: any) => {
+      const messageData: ChatMessage = { ...data, timestamp: Date.now() };
+      
+      messages.push(messageData);
+
+      const recipientSocketId = usersMap.get(data.recipientId);
       if (recipientSocketId) {
           io.to(recipientSocketId).emit('receive_trade_message', messageData);
       }
       
-      // Emit back to the sender for immediate UI display (optimistic update)
+      // Echo back to sender
       socket.emit('receive_trade_message', messageData);
   });
 
-  // 3. Critical Trade Status Updates
-  socket.on('update_trade_status', (data) => {
-      // Logic: Update database entry here.
-
-      const recipientSocketId = usersMap.get(data.recipientId);
-      
-      // Notify both parties of the critical status change
-      if (recipientSocketId) {
-          io.to(recipientSocketId).emit('trade_status_updated', data);
-      }
-      socket.emit('trade_status_updated', data);
-  });
-
-  // Handle Disconnection
   socket.on('disconnect', () => {
-    // Clean up the user map
     if (socket.data.userId) {
       usersMap.delete(socket.data.userId);
     }
@@ -97,5 +95,5 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`Socket.IO Server running on ws://localhost:${PORT}`);
+  console.log(`✅ Socket.IO Marketplace Server running on port ${PORT}`);
 });
