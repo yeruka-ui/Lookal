@@ -1,5 +1,3 @@
-// yeruka-ui/lookal/klyde2/components/main-layout-wrapper.tsx
-
 "use client"
 
 import type React from "react"
@@ -8,20 +6,22 @@ import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
 import { BottomNav } from "@/components/bottom-nav"
 import { TransitionWrapper } from "./transition-wrapper"
-import { useUI } from "@/lib/ui-context" // <-- ADDED
+import { useUI } from "@/lib/ui-context"
 import { useCart } from "@/lib/cart-context"
+import { usePathname } from "next/navigation"
 
 export function MainLayoutWrapper({
     children,
 }: {
     children: React.ReactNode
 }) {
-    const [cartOpen, setCartOpen] = useState(false)
     const [checkoutOpen, setCheckoutOpen] = useState(false)
-    const { isFullScreenMode } = useUI() // <-- USE CONTEXT
+    const { isFullScreenMode, isCartOpen, setCartOpen } = useUI()
+    const { totalItems } = useCart()
+    const pathname = usePathname()
 
-    // Navigation is hidden only when a component (ProductSwiper) sets isFullScreenMode to true
-    const hideNav = isFullScreenMode
+    // Navigation is hidden when isFullScreenMode is true OR when on a product page
+    const hideNav = isFullScreenMode || pathname?.startsWith("/product/")
 
     const handleCheckout = () => {
         setCartOpen(false)
@@ -50,7 +50,7 @@ export function MainLayoutWrapper({
             )}
 
             <CartSheet
-                open={cartOpen}
+                open={isCartOpen}
                 onClose={() => setCartOpen(false)}
                 onCheckout={handleCheckout}
             />

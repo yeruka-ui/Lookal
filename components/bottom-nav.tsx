@@ -1,15 +1,14 @@
-// yeruka-ui/lookal/Lookal-klyde2/components/bottom-nav.tsx
-
 "use client"
 
 import { usePathname, useRouter } from "next/navigation"
-import { ShoppingCart, Home as HomeIcon, Compass, User } from "lucide-react"
+import { Home as HomeIcon, Compass, User } from "lucide-react" // Removed ShoppingCart
 
 interface BottomNavProps {
-    onCartOpen: () => void
+    onCartOpen: () => void // Kept for MainLayoutWrapper compatibility, but unused here
+    // Removed totalItems
 }
 
-export function BottomNav({ onCartOpen }: BottomNavProps) {
+export function BottomNav({ onCartOpen }: BottomNavProps) { // Removed totalItems parameter
     const router = useRouter()
     const pathname = usePathname()
 
@@ -44,14 +43,6 @@ export function BottomNav({ onCartOpen }: BottomNavProps) {
                     title="Explore"
                 >
                     <Compass className="w-5 h-5" />
-                </button>
-                {/* Cart Button */}
-                <button
-                    onClick={onCartOpen}
-                    className="flex items-center justify-center w-12 h-12 rounded-full text-muted-foreground hover:bg-secondary transition-all duration-300"
-                    title="Cart"
-                >
-                    <ShoppingCart className="w-5 h-5" />
                 </button>
                 {/* Account Button -> Navigates to /account (TBD route) */}
                 <button

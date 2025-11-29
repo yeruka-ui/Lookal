@@ -1,5 +1,3 @@
-// yeruka-ui/lookal/klyde2/lib/ui-context.tsx
-
 "use client"
 
 import React, { createContext, useContext, useState, type ReactNode } from 'react'
@@ -7,15 +5,18 @@ import React, { createContext, useContext, useState, type ReactNode } from 'reac
 interface UIContextType {
     isFullScreenMode: boolean
     setFullScreenMode: (state: boolean) => void
+    isCartOpen: boolean
+    setCartOpen: (state: boolean) => void
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined)
 
 export function UIProvider({ children }: { children: ReactNode }) {
     const [isFullScreenMode, setFullScreenMode] = useState(false)
+    const [isCartOpen, setCartOpen] = useState(false)
 
     return (
-        <UIContext.Provider value={{ isFullScreenMode, setFullScreenMode }}>
+        <UIContext.Provider value={{ isFullScreenMode, setFullScreenMode, isCartOpen, setCartOpen }}>
             {children}
         </UIContext.Provider>
     )
