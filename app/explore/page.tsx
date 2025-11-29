@@ -9,7 +9,7 @@ import { shops, type Shop, type Product } from "@/lib/mock-data"
 import { ProductSwiper } from "@/components/product-swiper"
 import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
-import { ShoppingCart, Star, MapPin, X, Eye, MessageCircle, ChevronUp, BadgeCheck, Store, ArrowDown } from "lucide-react"
+import { ShoppingCart, Star, MapPin, X, Eye, MessageCircle, ChevronUp, BadgeCheck, Store } from "lucide-react"
 
 // Tent color schemes
 const tentColorSchemes = [
@@ -30,7 +30,7 @@ function ShopExploreView() {
     const [viewingProducts, setViewingProducts] = useState(false)
     const [isZooming, setIsZooming] = useState(false)
     const [swipeOffset, setSwipeOffset] = useState(0)
-    const [verticalOffset, setVerticalOffset] = useState(0)
+    // Removed verticalOffset state usage for exit
     const [isDragging, setIsDragging] = useState(false)
     const [tentColorIndex, setTentColorIndex] = useState(0)
     const [displayedProducts, setDisplayedProducts] = useState<Product[]>([])
@@ -100,10 +100,8 @@ function ShopExploreView() {
 
     const handleNextShop = () => {
         const exitX = swipeOffset < 0 ? -500 : swipeOffset > 0 ? 500 : 0
-        const exitY = verticalOffset > 0 ? 800 : 0
-
+        
         setSwipeOffset(exitX)
-        setVerticalOffset(exitY)
         setTentColorIndex((prev) => (prev + 1) % tentColorSchemes.length)
 
         setTimeout(() => {
@@ -114,7 +112,6 @@ function ShopExploreView() {
                 setCurrentShop(null)
             }
             setSwipeOffset(0)
-            setVerticalOffset(0)
             if (scrollRef.current) scrollRef.current.scrollTop = 0
         }, 300)
     }
@@ -146,11 +143,7 @@ function ShopExploreView() {
     const handleTouchStart = (e: React.TouchEvent) => {
         touchStartX.current = e.touches[0].clientX
         touchStartY.current = e.touches[0].clientY
-        if (scrollRef.current && scrollRef.current.scrollTop <= 0) {
-            setIsDragging(true)
-        } else {
-            setIsDragging(true)
-        }
+        setIsDragging(true)
     }
 
     const handleTouchMove = (e: React.TouchEvent) => {
@@ -171,11 +164,7 @@ function ShopExploreView() {
     const handleMouseDown = (e: React.MouseEvent) => {
         touchStartX.current = e.clientX
         touchStartY.current = e.clientY
-        if (scrollRef.current && scrollRef.current.scrollTop <= 0) {
-            setIsDragging(true)
-        } else {
-            setIsDragging(true)
-        }
+        setIsDragging(true)
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -198,34 +187,18 @@ function ShopExploreView() {
     }
 
     const handleDragMove = (diffX: number, diffY: number, e: React.SyntheticEvent) => {
-        const isAtTop = scrollRef.current ? scrollRef.current.scrollTop <= 0 : true
-
+        // Only allow horizontal swipes for navigation
         if (Math.abs(diffX) > Math.abs(diffY)) {
-            // Horizontal swipe
             setSwipeOffset(diffX)
-            setVerticalOffset(0)
-        } else {
-            // Vertical swipe
-            if (isAtTop && diffY > 0) {
-                setVerticalOffset(diffY)
-                setSwipeOffset(0)
-                // @ts-ignore
-                if (diffY > 10 && e.cancelable) e.preventDefault()
-            } else if (isAtTop && diffY < 0) {
-                setVerticalOffset(0)
-            } else {
-                setVerticalOffset(0)
-                setSwipeOffset(0)
-            }
-        }
+        } 
+        // Logic for vertical swipe (exit) has been removed as requested
     }
 
     const handleDragEnd = () => {
         const threshold = 100
 
-        if (verticalOffset > threshold) {
-            handleNextShop()
-        } else if (swipeOffset < -threshold) {
+        // Only handle horizontal swipes
+        if (swipeOffset < -threshold) {
             handleNextShop()
         } else if (swipeOffset > threshold) {
             setTentColorIndex((prev) => (prev + 1) % tentColorSchemes.length)
@@ -233,7 +206,6 @@ function ShopExploreView() {
             handleViewProducts()
         } else {
             setSwipeOffset(0)
-            setVerticalOffset(0)
             setBounceEffect(0)
         }
     }
@@ -260,7 +232,6 @@ function ShopExploreView() {
     if (viewingProducts && currentShop) {
         return (
             <>
-                {/* The ProductSwiper component will handle setting/unsetting the isFullScreenMode context state */}
                 <ProductSwiper shop={currentShop} onBack={handleBackToShops} />
                 <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={handleCheckout} />
                 <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
@@ -289,7 +260,7 @@ function ShopExploreView() {
         )
     }
 
-    const opacity = Math.max(0, 1 - Math.sqrt(swipeOffset ** 2 + verticalOffset ** 2) / 400)
+    const opacity = Math.max(0, 1 - Math.abs(swipeOffset) / 400)
     const currentColors = tentColorSchemes[tentColorIndex]
 
     return (
@@ -324,7 +295,7 @@ function ShopExploreView() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
                 style={{
-                    transform: `translate(${swipeOffset}px, ${verticalOffset}px) scale(${1 - bounceEffect * 0.05})`,
+                    transform: `translateX(${swipeOffset}px) scale(${1 - bounceEffect * 0.05})`,
                     opacity: isDragging ? opacity : 1,
                     transitionDuration: isDragging ? "0ms" : "300ms",
                 }}
@@ -418,18 +389,12 @@ function ShopExploreView() {
                 </div>
                 <p className="text-green-700 font-bold text-center mt-2 bg-white/80 px-2 rounded-full backdrop-blur-sm">VIEW</p>
             </div>
-            <div className={`fixed left-1/2 -translate-x-1/2 bottom-32 z-50 transition-all duration-300 ${verticalOffset > 50 ? "opacity-100 scale-110" : "opacity-0 scale-90"}`}>
-                <div className="w-12 h-12 rounded-full bg-gray-800 text-white flex items-center justify-center shadow-2xl">
-                    <ArrowDown className="w-6 h-6" />
-                </div>
-                <p className="text-gray-800 font-bold text-center mt-1 bg-white/80 px-2 rounded-full backdrop-blur-sm text-xs">EXIT</p>
-            </div>
+            {/* Removed EXIT arrow indicator */}
 
 
             {/* Bumble/Tinder Style Info Overlay (Fixed Bottom) - Lighter Dynamic Gradient */}
             <div
                 className="fixed bottom-0 left-0 right-0 z-40 pt-32 pb-28 px-6 text-white pointer-events-none transition-opacity duration-300 ease-out"
-                // Fixed Opacity 1 (fully visible) for the gradient overlay
                 style={{
                     background: `linear-gradient(to top, ${currentColors.primary}D9 0%, ${currentColors.primary}99 50%, transparent 100%)`,
                     opacity: 1
@@ -470,7 +435,6 @@ function ShopExploreView() {
     )
 }
 
-// Renamed and exported as default to satisfy Next.js file-system routing.
 export default function ExplorePage() {
     return (
         <CartProvider>
