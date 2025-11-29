@@ -58,14 +58,29 @@ export default function PendingOrdersPage() {
     }
   }
 
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const updated = await updateOrderStatus(id, newStatus as 'pending' | 'confirmed' | 'preparing' | 'on_the_way' | 'delivered' | 'shipped')
+      setOrders(orders.map((order) => (order.id === updated.id ? updated : order)))
+    } catch (err) {
+      console.error('Error updating order status:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+      alert(`Failed to update order status: ${errorMessage}\n\nNote: You may need to update your database to support the new status values (preparing, on_the_way, delivered).`)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
         return "bg-orange-100 text-orange-800"
       case "confirmed":
-        return "bg-green-100 text-green-800"
-      case "shipped":
+      case "preparing":
+        return "bg-yellow-100 text-yellow-800"
+      case "on_the_way":
         return "bg-blue-100 text-blue-800"
+      case "delivered":
+      case "shipped":
+        return "bg-green-100 text-green-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -138,7 +153,7 @@ export default function PendingOrdersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <p className="text-xs font-medium text-foreground/60 uppercase tracking-wide mb-1">Buyer</p>
                   <p className="text-foreground font-medium">{order.buyer_name}</p>
@@ -151,20 +166,24 @@ export default function PendingOrdersPage() {
                   <p className="text-xs font-medium text-foreground/60 uppercase tracking-wide mb-1">Quantity</p>
                   <p className="text-foreground font-medium">{order.quantity}</p>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-foreground/60 uppercase tracking-wide mb-1">Total Price</p>
-                  <p className="text-foreground font-bold">₱{(order.price * order.quantity).toFixed(2)}</p>
-                </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-primary/10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-primary/10">
                 <p className="text-sm text-foreground/50">Ordered on {new Date(order.order_date).toLocaleDateString()}</p>
-                {order.status === "pending" && (
-                  <Button onClick={() => handleConfirmOrder(order.id)} className="bg-primary hover:bg-primary/90 gap-2">
-                    <Check className="w-4 h-4" />
-                    Confirm Order
-                  </Button>
-                )}
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <label className="text-xs font-medium text-foreground/60 whitespace-nowrap">Order Status:</label>
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                    className="px-3 py-2 rounded-lg bg-secondary/50 border border-border focus:ring-2 focus:ring-primary/20 text-sm font-medium text-foreground flex-1 sm:flex-none"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="preparing">Preparing</option>
+                    <option value="on_the_way">On the Way</option>
+                    <option value="delivered">Delivered</option>
+                  </select>
+                </div>
               </div>
             </div>
           ))}

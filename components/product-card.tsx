@@ -19,11 +19,11 @@ export function ProductCard({ product, shopName }: ProductCardProps) {
   
   const handleHaggle = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent swipe interference
-    const message = `Hi ${shopName}, I'm interested in the ${product.name}. Is the price negotiable?`
+    const message = `Hi ${shopName}, I'm interested in the ${product.name}. Would you consider a trade?`
 
     // Simulate opening a chat window
     // In a real app, this would route to /chat/[id] with a query param
-    alert(`Starting Chat with ${shopName}:\n\n"${message}"`)
+    alert(`Starting Chat with ${shopName}:\\n\\n"${message}"`)
   }
 
   return (
@@ -74,11 +74,6 @@ export function ProductCard({ product, shopName }: ProductCardProps) {
               <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
               {shopName}
             </p>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-4xl font-black text-green-400 tracking-tighter drop-shadow-md">
-              ${product.price.toFixed(0)}
-            </span>
           </div>
         </div>
 

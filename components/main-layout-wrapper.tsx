@@ -21,8 +21,8 @@ export function MainLayoutWrapper({
     const { totalItems } = useCart()
     const pathname = usePathname()
 
-    // Navigation is hidden when isFullScreenMode is true OR when on a product page
-    const hideNav = isFullScreenMode || pathname?.startsWith("/product/")
+    // Navigation is hidden when isFullScreenMode is true OR when on a product page OR when on chat page (trade negotiation)
+    const hideNav = isFullScreenMode || pathname?.startsWith("/product/") || pathname?.startsWith("/chat/")
 
     const handleCheckout = () => {
         setCartOpen(false)
