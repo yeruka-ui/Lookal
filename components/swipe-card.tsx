@@ -64,7 +64,7 @@ export function SwipeCard({
       setTimeout(onSwipeLeft, 500)
     } else if (isSwipeRight) {
       setExitDirection("right")
-      setTimeout(onSwipeRight, 500)
+      setTimeout(onSwipeRight, 200)
     }
   }
 

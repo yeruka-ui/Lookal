@@ -289,21 +289,6 @@ function ShopExploreView() {
             className={`min-h-screen flex flex-col overflow-hidden bg-gradient-to-b from-sky-100 to-green-50 transition-all duration-500 ease-out ${isZooming ? "scale-[2] opacity-0" : "opacity-100"
                 }`}
         >
-            {/* Top Right "Loot Bag" Button (Fixed) */}
-            <div className="fixed top-4 right-4 z-50">
-                <button
-                    onClick={() => setCartOpen(true)}
-                    className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md border border-white/20 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all text-amber-700"
-                >
-                    <ShoppingCart className="w-6 h-6" />
-                    {totalItems > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
-                            {totalItems > 9 ? "9+" : totalItems}
-                        </span>
-                    )}
-                </button>
-            </div>
-
             {/* Main Swipeable Container */}
             <div
                 ref={contentRef}
@@ -371,7 +356,7 @@ function ShopExploreView() {
                                 />
 
                                 <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                                    ${product.price.toFixed(0)}
+                                    Barter
                                 </div>
 
                                 <button
@@ -458,8 +443,6 @@ function ShopExploreView() {
 
 export default function ExplorePage() {
     return (
-        <CartProvider>
-            <ShopExploreView />
-        </CartProvider>
+        <ShopExploreView />
     )
 }

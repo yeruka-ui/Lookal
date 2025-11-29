@@ -81,14 +81,15 @@ export default function ProductPage() {
                             </span>
                         </div>
                     </div>
-                    <div className="text-right shrink-0">
-                        <div className="text-3xl font-black text-primary">${product.price.toFixed(2)}</div>
+                    <div className="text-right shrink-0 max-w-[50%]">
+                        <div className="text-sm font-bold text-muted-foreground mb-1">Barter For:</div>
+                        <div className="text-lg font-black text-primary leading-tight">{product.barterValue}</div>
                         {product.inStock ? (
-                            <div className="text-xs font-bold text-green-600 flex items-center justify-end gap-1 mt-1">
-                                <Check className="w-3 h-3" /> In Stock
+                            <div className="text-xs font-bold text-green-600 flex items-center justify-end gap-1 mt-2">
+                                <Check className="w-3 h-3" /> Available
                             </div>
                         ) : (
-                            <div className="text-xs font-bold text-red-500 mt-1">Out of Stock</div>
+                            <div className="text-xs font-bold text-red-500 mt-2">Unavailable</div>
                         )}
                     </div>
                 </div>
@@ -159,11 +160,11 @@ export default function ProductPage() {
                 >
                     {added ? (
                         <>
-                            <Check className="w-6 h-6" /> Added to Cart
+                            <Check className="w-6 h-6" /> Added to List
                         </>
                     ) : (
                         <>
-                            <ShoppingCart className="w-6 h-6" /> Add to Cart
+                            <ShoppingCart className="w-6 h-6" /> Add to Barter List
                         </>
                     )}
                 </button>
