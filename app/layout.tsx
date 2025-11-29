@@ -7,8 +7,9 @@ import { CartProvider } from "@/lib/cart-context"
 import { MainLayoutWrapper } from "@/components/main-layout-wrapper"
 import { UIProvider } from "@/lib/ui-context"
 import { SocketProvider } from "@/lib/socket-context"
-import { Toaster } from "@/components/ui/toaster" // Import Toaster
-import { NotificationListener } from "@/components/notification-listener" // Import Listener
+import { Toaster } from "@/components/ui/toaster"
+import { NotificationListener } from "@/components/notification-listener"
+import { DevToolbar } from "@/components/dev-toolbar" // NEW IMPORT
 
 const _dmSans = DM_Sans({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -30,11 +31,14 @@ export default function RootLayout({
         <SocketProvider>
           <CartProvider>
             <UIProvider>
-              {/* These two components enable the notification system globally */}
-              <NotificationListener /> 
+              <NotificationListener />
               <MainLayoutWrapper>
                 {children}
               </MainLayoutWrapper>
+              
+              {/* NEW: Developer Toolbar for Role Switching */}
+              <DevToolbar />
+              
               <Toaster />
             </UIProvider>
           </CartProvider>
