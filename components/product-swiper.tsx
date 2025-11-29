@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import type { Shop } from "@/lib/mock-data"
 import { useCart } from "@/lib/cart-context"
 import { SwipeCard } from "./swipe-card"
 import { ProductCard } from "./product-card"
-import { ProductDetailModal } from "./product-detail-modal"
+// Removed import of ProductDetailModal
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ShoppingCart, Check, Package } from "lucide-react"
 
@@ -16,7 +16,7 @@ interface ProductSwiperProps {
 
 export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   const [productIndex, setProductIndex] = useState(0)
-  const [showDetail, setShowDetail] = useState(false)
+  // Removed [showDetail, setShowDetail] state
   const [addedToCart, setAddedToCart] = useState<string | null>(null)
   const { addItem } = useCart()
 
@@ -40,10 +40,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
     }
   }
 
-  const handleSwipeDown = () => {
-    setShowDetail(true)
-  }
-
+  // Removed handleSwipeDown function
 
 
   if (!hasMoreProducts) {
@@ -101,21 +98,15 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
           key={currentProduct.id}
           onSwipeLeft={handleSwipeLeft}
           onSwipeRight={handleSwipeRight}
-          onSwipeDown={handleSwipeDown}
+          // Removed onSwipeDown prop
           leftLabel="SKIP"
           rightLabel="ADD"
-          downLabel="INFO"
+          // Removed downLabel prop
         >
           <ProductCard product={currentProduct} shopName={shop.name} />
         </SwipeCard>
       </div>
 
-
-
-      {/* Product detail modal */}
-      {showDetail && currentProduct && (
-        <ProductDetailModal product={currentProduct} shop={shop} onClose={() => setShowDetail(false)} />
-      )}
     </div>
   )
 }
