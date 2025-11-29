@@ -4,7 +4,7 @@ import 'dotenv/config';
 
 const PORT = process.env.SOCKET_PORT || 3001;
 
-// --- 1. Define Typed Interfaces for Events ---
+// --- 1. Define Data Structures ---
 interface TradeProposal {
   tradeId: string;
   proposerId: string;
@@ -14,40 +14,23 @@ interface TradeProposal {
   timestamp: number;
 }
 
-interface ServerToClientEvents {
-  receive_trade_message: (data: any) => void;
-  trade_status_updated: (data: any) => void;
-  trade_proposed: (data: TradeProposal) => void;      // New: For Red Dot & Live Feed
-  marketplace_history: (data: TradeProposal[]) => void; // New: For loading past trades
+interface ChatMessage {
+  tradeId: string;
+  message: string;
+  senderId: string;
+  recipientId: string;
+  timestamp: number;
 }
 
-interface ClientToServerEvents {
-  send_trade_message: (data: any) => void;
-  update_trade_status: (data: any) => void;
-  authenticate_user: (userId: string) => void;
-  propose_trade: (data: any) => void;
-  get_trades: (userId: string) => void; // New: Explicitly requesting history
-}
-
-interface InterServerEvents {}
-interface SocketData {
-  userId: string;
-}
-
-// --- 2. In-Memory Storage (The "Database") ---
+// --- 2. In-Memory Storage ---
 const trades: TradeProposal[] = []; 
-const usersMap = new Map<string, string>(); // Maps userId -> socketId
+const messages: ChatMessage[] = []; // NEW: Store all chat messages here
+const usersMap = new Map<string, string>(); 
 
 const httpServer = createServer();
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
-  httpServer,
-  {
-    cors: {
-      origin: '*',
-      methods: ['GET', 'POST']
-    }
-  }
-);
+const io = new Server(httpServer, {
+  cors: { origin: '*', methods: ['GET', 'POST'] }
+});
 
 io.on('connection', (socket) => {
   
@@ -58,47 +41,49 @@ io.on('connection', (socket) => {
       console.log(`User connected: ${userId}`);
   });
 
-  // -- Marketplace Logic --
-
-  // A. Save & Broadcast New Proposal
-  socket.on('propose_trade', (data: any) => {
-      const proposalData: TradeProposal = {
-          ...data,
-          timestamp: Date.now()
-      };
-
-      console.log(`📝 Saving Proposal: ${data.tradeId}`);
-      trades.push(proposalData); // Save to memory
-
-      // Notify Shop Owner (if online)
-      const shopSocketId = usersMap.get(data.shopOwnerId);
-      if (shopSocketId) {
-          io.to(shopSocketId).emit('trade_proposed', proposalData);
-      }
-
-      // Echo back to Proposer (so they see it too)
-      socket.emit('trade_proposed', proposalData);
-  });
-
-  // B. Fetch History (Fixes "Empty Marketplace" bug)
-  // We accept userId explicitly here to avoid race conditions with auth
+  // -- Marketplace Logic (Existing) --
   socket.on('get_trades', (userId: string) => {
-      console.log(`Fetching trades for: ${userId}`);
-      // Filter trades where this user involved
       const userTrades = trades.filter(t => 
           t.proposerId === userId || t.shopOwnerId === userId
       );
       socket.emit('marketplace_history', userTrades);
   });
 
-  // -- Chat Logic --
-  socket.on('send_trade_message', (data) => {
-      const messageData = { ...data, timestamp: Date.now() };
+  socket.on('propose_trade', (data: TradeProposal) => {
+      const proposalData = { ...data, timestamp: Date.now() };
+      trades.push(proposalData); 
+
+      const shopSocketId = usersMap.get(data.shopOwnerId);
+      if (shopSocketId) {
+          io.to(shopSocketId).emit('trade_proposed', proposalData);
+      }
+      socket.emit('trade_proposed', proposalData);
+  });
+
+  // -- Chat Logic (UPDATED) --
+
+  // NEW: Fetch Chat History
+  socket.on('get_chat_history', (tradeId: string) => {
+      // Filter messages for this specific trade
+      const history = messages.filter(m => m.tradeId === tradeId);
+      // Send back to the user who asked
+      socket.emit('chat_history', history);
+  });
+
+  socket.on('send_trade_message', (data: any) => {
+      const messageData: ChatMessage = { ...data, timestamp: Date.now() };
       
+      // 1. SAVE to Memory (Fixes "Clears on Refresh" & "Late Joiner")
+      messages.push(messageData);
+
+      // 2. Send to Recipient (if online)
       const recipientSocketId = usersMap.get(data.recipientId);
       if (recipientSocketId) {
           io.to(recipientSocketId).emit('receive_trade_message', messageData);
+          // Optional: Send a 'notification' event here if you want a global red dot for chats too
       }
+      
+      // 3. Echo back to Sender (for immediate UI update)
       socket.emit('receive_trade_message', messageData);
   });
 
@@ -110,5 +95,5 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`✅ Socket.IO Marketplace Server running on port ${PORT}`);
+  console.log(`✅ Socket.IO Server running on port ${PORT}`);
 });

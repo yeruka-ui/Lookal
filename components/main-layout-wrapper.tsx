@@ -6,6 +6,7 @@ import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
 import { BottomNav } from "@/components/bottom-nav"
 import { TransitionWrapper } from "./transition-wrapper"
+import { UserOnboardingModal } from "@/components/user-onboarding-modal"
 import { useUI } from "@/lib/ui-context"
 import { useCart } from "@/lib/cart-context"
 import { usePathname } from "next/navigation"
@@ -59,6 +60,8 @@ export function MainLayoutWrapper({
                 open={checkoutOpen}
                 onClose={handleCloseCheckout}
             />
+
+            <UserOnboardingModal />
         </>
     )
 }
