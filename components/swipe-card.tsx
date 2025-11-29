@@ -55,16 +55,16 @@ export function SwipeCard({
 
     if (isSwipeUp && onSwipeUp && Math.abs(info.offset.y) > Math.abs(info.offset.x)) {
       setExitDirection("up")
-      setTimeout(onSwipeUp, 200)
+      setTimeout(onSwipeUp, 500)
     } else if (isSwipeDown && onSwipeDown && Math.abs(info.offset.y) > Math.abs(info.offset.x)) {
       setExitDirection("down")
-      setTimeout(onSwipeDown, 200)
+      setTimeout(onSwipeDown, 500)
     } else if (isSwipeLeft) {
       setExitDirection("left")
-      setTimeout(onSwipeLeft, 200)
+      setTimeout(onSwipeLeft, 500)
     } else if (isSwipeRight) {
       setExitDirection("right")
-      setTimeout(onSwipeRight, 200)
+      setTimeout(onSwipeRight, 500)
     }
   }
 
@@ -74,16 +74,16 @@ export function SwipeCard({
 
       if (e.key === "ArrowLeft") {
         setExitDirection("left")
-        setTimeout(onSwipeLeft, 200)
+        setTimeout(onSwipeLeft, 500)
       } else if (e.key === "ArrowRight") {
         setExitDirection("right")
-        setTimeout(onSwipeRight, 200)
+        setTimeout(onSwipeRight, 500)
       } else if (e.key === "ArrowUp" && onSwipeUp) {
         setExitDirection("up")
-        setTimeout(onSwipeUp, 200)
-      } else if (e.key === "ArrowDown" && onSwipeDown) {  // Changed || to &&
+        setTimeout(onSwipeUp, 500)
+      } else if (e.key === "ArrowDown" && onSwipeDown) {
         setExitDirection("down")
-        setTimeout(onSwipeDown, 200)
+        setTimeout(onSwipeDown, 500)
       }
     }
 
@@ -92,16 +92,28 @@ export function SwipeCard({
   }, [exitDirection, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown])
 
   const exitVariants = {
-    left: { x: -500, opacity: 0, transition: { duration: 0.3 } },
-    right: { x: 500, opacity: 0, transition: { duration: 0.3 } },
-    up: { y: -500, opacity: 0, transition: { duration: 0.3 } },
-    down: { y: 500, opacity: 0, transition: { duration: 0.3 } },
+    left: { x: "-100vw", opacity: 0, rotate: -15, transition: { duration: 0.5 } },
+    right: { x: "100vw", opacity: 0, rotate: 15, transition: { duration: 0.5 } },
+    up: { y: "-100vh", opacity: 0, transition: { duration: 0.5 } },
+    down: { y: "100vh", opacity: 0, transition: { duration: 0.5 } },
   }
 
   return (
     <div ref={constraintsRef} className="relative w-full h-full flex items-center justify-center">
+      {/* Background Gradients */}
       <motion.div
-        className="absolute w-full cursor-grab active:cursor-grabbing"
+        className="fixed inset-y-0 left-0 w-1/6 bg-gradient-to-r from-red-500/40 to-transparent pointer-events-none z-0"
+        style={{ opacity: opacityLeft }}
+        animate={exitDirection === "left" ? { opacity: 1 } : {}}
+      />
+      <motion.div
+        className="fixed inset-y-0 right-0 w-1/6 bg-gradient-to-l from-green-500/40 to-transparent pointer-events-none z-0"
+        style={{ opacity: opacityRight }}
+        animate={exitDirection === "right" ? { opacity: 1 } : {}}
+      />
+
+      <motion.div
+        className="absolute w-full cursor-grab active:cursor-grabbing z-10"
         style={{ x, y, rotateZ, scale }}
         drag
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}

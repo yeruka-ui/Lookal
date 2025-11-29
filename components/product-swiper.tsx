@@ -110,27 +110,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
         </SwipeCard>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex justify-center gap-4 pb-6">
-        <button
-          onClick={handleSwipeLeft}
-          className="w-14 h-14 rounded-full bg-card border-2 border-destructive/30 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        >
-          <span className="text-2xl text-destructive">✕</span>
-        </button>
-        <button
-          onClick={handleSwipeDown}
-          className="w-12 h-12 rounded-full bg-card border-2 border-accent/30 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        >
-          <span className="text-xl text-accent">↓</span>
-        </button>
-        <button
-          onClick={handleSwipeRight}
-          className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        >
-          <ShoppingCart className="w-6 h-6 text-primary-foreground" />
-        </button>
-      </div>
+
 
       {/* Product detail modal */}
       {showDetail && currentProduct && (
