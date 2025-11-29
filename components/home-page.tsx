@@ -1,10 +1,6 @@
 "use client"
 
-<<<<<<< HEAD
 import { useState, useEffect } from "react"
-=======
-import { useState } from "react"
->>>>>>> parent of aef409a (Add DevToolbar and enhance notification handling)
 import { shops, type Shop, type Product } from "@/lib/mock-data"
 import { Search, ShoppingCart, MapPin, Star, Filter, ArrowRight, X, Check } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
@@ -27,16 +23,11 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
     const [isLoading, setIsLoading] = useState(true)
     const { totalItems } = useCart()
 
-<<<<<<< HEAD
-    // Filter States (from klyde4)
-=======
     // Filter States
->>>>>>> parent of aef409a (Add DevToolbar and enhance notification handling)
     const [isFilterOpen, setIsFilterOpen] = useState(false)
     const [sortBy, setSortBy] = useState<"rating" | "name" | null>(null)
     const [selectedLocation, setSelectedLocation] = useState<string | null>(null)
 
-<<<<<<< HEAD
     // Fetch Supabase products on mount
     useEffect(() => {
         async function fetchSupabaseProducts() {
@@ -66,11 +57,9 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
     // Extract all unique categories and locations
     const categories = Array.from(new Set(allShops.map((s) => s.category)))
     const locations = Array.from(new Set(allShops.map((s) => s.location)))
-=======
-    // Extract all unique categories and locations
-    const categories = Array.from(new Set(shops.map((s) => s.category)))
-    const locations = Array.from(new Set(shops.map((s) => s.location)))
->>>>>>> parent of aef409a (Add DevToolbar and enhance notification handling)
+    // // Extract all unique categories and locations
+    // const categories = Array.from(new Set(shops.map((s) => s.category)))
+    // const locations = Array.from(new Set(shops.map((s) => s.location)))
 
     // Filter shops based on search, category, and location
     const filteredShops = shops
