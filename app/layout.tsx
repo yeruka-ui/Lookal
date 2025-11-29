@@ -8,12 +8,13 @@ import "./globals.css"
 import { CartProvider } from "@/lib/cart-context"
 import { MainLayoutWrapper } from "@/components/main-layout-wrapper"
 import { UIProvider } from "@/lib/ui-context" // <-- ADDED
+import { SocketProvider } from "@/lib/socket-context" // Import the new provider
 
 const _dmSans = DM_Sans({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "LocalMart - Swipe to Shop Local",
+  title: "Lookal",
   description: "Discover and support local entrepreneurs with a swipe",
   generator: 'v0.app'
 }
@@ -26,13 +27,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <CartProvider>
-          <UIProvider>
-            <MainLayoutWrapper>
-              {children}
-            </MainLayoutWrapper>
-          </UIProvider>
-        </CartProvider>
+        <SocketProvider> {/* <--- Add this wrapper */}
+          <CartProvider>
+            <UIProvider>
+              <MainLayoutWrapper>
+                {children}
+              </MainLayoutWrapper>
+            </UIProvider>
+          </CartProvider>
+        </SocketProvider> {/* <--- Close it here */}
         <Analytics />
       </body>
     </html>
