@@ -107,7 +107,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
                     {filteredShops.map((shop) => (
                         <div
                             key={shop.id}
-                            onClick={() => onNavigateToShop(shop)}
+                            onClick={() => router.push(`/shop/${shop.id}`)}
                             className="snap-center shrink-0 w-[280px] bg-card rounded-2xl overflow-hidden shadow-sm border border-border/50 group cursor-pointer hover:shadow-md transition-all"
                         >
                             <div className="h-32 overflow-hidden relative">
