@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/bottom-nav"
 import { TransitionWrapper } from "./transition-wrapper"
 import { useUI } from "@/lib/ui-context"
 import { useCart } from "@/lib/cart-context"
+import { usePathname } from "next/navigation"
 
 export function MainLayoutWrapper({
     children,
@@ -18,9 +19,10 @@ export function MainLayoutWrapper({
     const [checkoutOpen, setCheckoutOpen] = useState(false)
     const { isFullScreenMode } = useUI()
     const { totalItems } = useCart()
+    const pathname = usePathname()
 
-    // Navigation is hidden only when a component (ProductSwiper) sets isFullScreenMode to true
-    const hideNav = isFullScreenMode
+    // Navigation is hidden when isFullScreenMode is true OR when on a product page
+    const hideNav = isFullScreenMode || pathname?.startsWith("/product/")
 
     const handleCheckout = () => {
         setCartOpen(false)
@@ -44,8 +46,7 @@ export function MainLayoutWrapper({
             {/* Conditionally render the BottomNav */}
             {!hideNav && (
                 <BottomNav
-                    onCartOpen={() => setCartOpen(true)} // Retained for interface, though cart button is removed
-                    // Removed totalItems to clean up interface
+                    onCartOpen={() => setCartOpen(true)}
                 />
             )}
 

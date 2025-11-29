@@ -4,12 +4,14 @@ import { useState } from "react"
 import { shops, type Shop, type Product } from "@/lib/mock-data"
 import { Search, ShoppingCart, MapPin, Star, Filter, ArrowRight } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
+import { useRouter } from "next/navigation"
 
 interface HomePageProps {
     onNavigateToShop: (shop: Shop) => void
 }
 
 export function HomePage({ onNavigateToShop }: HomePageProps) {
+    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
     const { totalItems } = useCart()
@@ -33,7 +35,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
     return (
         <div className="min-h-screen bg-background pb-24">
             {/* Header */}
-            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-4 py-4">
+            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-32 py-4">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h1 className="text-2xl font-black text-primary tracking-tight">Lookal</h1>
@@ -67,7 +69,7 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
 
             {/* Categories */}
             <div className="py-4 overflow-x-auto scrollbar-hide">
-                <div className="flex px-4 gap-2">
+                <div className="flex px-32 gap-2">
                     <button
                         onClick={() => setSelectedCategory(null)}
                         className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${!selectedCategory
@@ -94,14 +96,14 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
 
             {/* Featured Shops */}
             <section className="py-4">
-                <div className="px-4 flex items-center justify-between mb-3">
+                <div className="px-32 flex items-center justify-between mb-3">
                     <h2 className="text-lg font-bold text-foreground">Trending Shops</h2>
                     <button className="text-xs font-bold text-primary flex items-center gap-1">
                         View All <ArrowRight className="w-3 h-3" />
                     </button>
                 </div>
 
-                <div className="flex overflow-x-auto px-4 gap-4 pb-4 scrollbar-hide snap-x">
+                <div className="flex overflow-x-auto px-32 gap-4 pb-4 scrollbar-hide snap-x">
                     {filteredShops.map((shop) => (
                         <div
                             key={shop.id}
@@ -144,13 +146,14 @@ export function HomePage({ onNavigateToShop }: HomePageProps) {
             </section>
 
             {/* Fresh Arrivals (Masonry-ish) */}
-            <section className="px-4 py-4">
+            <section className="px-32 py-4">
                 <h2 className="text-lg font-bold text-foreground mb-4">Fresh Arrivals</h2>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                     {allProducts.map((product, i) => (
                         <div
                             key={`${product.id}-${i}`}
-                            className="bg-card rounded-xl overflow-hidden shadow-sm border border-border/50 group"
+                            onClick={() => router.push(`/product/${product.id}`)}
+                            className="bg-card rounded-xl overflow-hidden shadow-sm border border-border/50 group cursor-pointer"
                         >
                             <div className="aspect-square overflow-hidden relative bg-secondary">
                                 <img
