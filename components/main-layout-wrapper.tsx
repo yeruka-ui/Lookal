@@ -1,5 +1,3 @@
-// yeruka-ui/lookal/klyde2/components/main-layout-wrapper.tsx
-
 "use client"
 
 import type React from "react"
@@ -8,7 +6,7 @@ import { CartSheet } from "@/components/cart-sheet"
 import { CheckoutModal } from "@/components/checkout-modal"
 import { BottomNav } from "@/components/bottom-nav"
 import { TransitionWrapper } from "./transition-wrapper"
-import { useUI } from "@/lib/ui-context" // <-- ADDED
+import { useUI } from "@/lib/ui-context"
 import { useCart } from "@/lib/cart-context"
 
 export function MainLayoutWrapper({
@@ -18,7 +16,8 @@ export function MainLayoutWrapper({
 }) {
     const [cartOpen, setCartOpen] = useState(false)
     const [checkoutOpen, setCheckoutOpen] = useState(false)
-    const { isFullScreenMode } = useUI() // <-- USE CONTEXT
+    const { isFullScreenMode } = useUI()
+    const { totalItems } = useCart()
 
     // Navigation is hidden only when a component (ProductSwiper) sets isFullScreenMode to true
     const hideNav = isFullScreenMode
@@ -45,7 +44,8 @@ export function MainLayoutWrapper({
             {/* Conditionally render the BottomNav */}
             {!hideNav && (
                 <BottomNav
-                    onCartOpen={() => setCartOpen(true)}
+                    onCartOpen={() => setCartOpen(true)} // Retained for interface, though cart button is removed
+                    // Removed totalItems to clean up interface
                 />
             )}
 
