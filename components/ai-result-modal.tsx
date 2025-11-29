@@ -14,11 +14,13 @@ interface AIResultModalProps {
     image_url: string
     is_generated_image: boolean
     fallback_reason?: string
+    tags?: { tag: string; color: string }[] // Added tags to result interface
   } | null
+  preferredItem?: string
   onAccept: () => void
 }
 
-export function AIResultModal({ isOpen, onClose, isLoading, result, onAccept }: AIResultModalProps) {
+export function AIResultModal({ isOpen, onClose, isLoading, result, preferredItem, onAccept }: AIResultModalProps) {
   if (!isOpen) return null
 
   return (
@@ -47,24 +49,24 @@ export function AIResultModal({ isOpen, onClose, isLoading, result, onAccept }: 
               <>
                 {/* Image Result */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-foreground">Enhanced Image</label>
+                  <label className="text-sm font-bold text-foreground">Product Preview</label>
                   <div className="relative aspect-square w-full rounded-2xl overflow-hidden border border-border/50 bg-secondary/30 shadow-sm">
                     <img
                       src={result.image_url}
-                      alt="AI Generated"
-                      className="w-full h-full object-cover"
+                      alt="Product"
+                      className="w-full h-full object-cover contrast-[1.08] saturate-[1.08] brightness-[1.05]" // Enhanced CSS Polish
                     />
-                    {result.is_generated_image && (
+                    {result.is_generated_image ? (
                       <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-full shadow-sm backdrop-blur-sm">
                         ✨ AI Generated
                       </div>
+                    ) : (
+                      <div className="absolute top-2 right-2 bg-secondary/90 text-foreground text-[10px] font-bold px-2 py-1 rounded-full shadow-sm backdrop-blur-sm border border-border/50">
+                        ✨ Color Enhanced
+                      </div>
                     )}
                   </div>
-                  {result.fallback_reason && (
-                      <p className="text-xs text-amber-500 mt-1">
-                          Note: Could not generate new image ({result.fallback_reason}). Using original.
-                      </p>
-                  )}
+
                 </div>
 
                 {/* Text Results */}
@@ -77,11 +79,45 @@ export function AIResultModal({ isOpen, onClose, isLoading, result, onAccept }: 
                   </div>
                   
                   <div>
-                    <label className="text-sm font-bold text-foreground">Description</label>
-                    <div className="p-4 bg-secondary/30 rounded-xl text-sm text-foreground border border-border/20 italic">
-                      "{result.description}"
+                  <label className="text-sm font-bold text-foreground">Description</label>
+                  <div className="p-4 bg-secondary/30 rounded-xl text-sm text-foreground border border-border/20 italic">
+                    "{result.description}"
+                  </div>
+                </div>
+
+                {/* Preferred Item Display */}
+                {preferredItem && (
+                  <div>
+                    <label className="text-sm font-bold text-foreground">Looking For</label>
+                    <div className="p-4 bg-secondary/30 rounded-xl text-sm text-foreground border border-border/20 flex items-center gap-2">
+                       <span className="text-primary">🔄</span> {preferredItem}
                     </div>
                   </div>
+                )}
+
+                {/* Tags */}
+                {result.tags && result.tags.length > 0 && (
+                  <div>
+                    <label className="text-sm font-bold text-foreground">Tags</label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {result.tags.map((tag: any, index: number) => {
+                         // Parse color string (e.g., "zinc-600")
+                         const [colorName, shade] = tag.color.split("-");
+                         const bgClass = `bg-${colorName}-100`;
+                         const textClass = `text-${colorName}-${shade || "800"}`;
+                         const borderClass = `border-${colorName}-200`;
+                         
+                         const colorClass = `${bgClass} ${textClass} ${borderClass}`;
+
+                         return (
+                            <span key={index} className={`px-3 py-1 rounded-full text-xs font-bold border ${colorClass}`}>
+                                {tag.tag}
+                            </span>
+                         )
+                      })}
+                    </div>
+                  </div>
+                )}
                 </div>
               </>
             ) : (

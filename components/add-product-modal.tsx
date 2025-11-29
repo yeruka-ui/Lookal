@@ -21,6 +21,8 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
     description: "",
     stock: "1", // Default to 1 for bartering
     image: "",
+    tags: [] as any[], // Store tags
+    preferredItem: "", // Optional preferred item to barter with
   })
 
   // AI Modal State
@@ -93,6 +95,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
         description: aiResult.ai_description,
         image: aiResult.image_url,
         name: aiResult.title !== "Untitled Product" ? aiResult.title : "",
+        tags: aiResult.tags || [],
       }))
       setImagePreview(aiResult.image_url)
       setStep("form")
@@ -114,10 +117,12 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
       description: formData.description,
       stock: 1, // Default to 1
       image: formData.image || "/diverse-products-still-life.png",
+      // tags: formData.tags, // Pass tags if the parent component accepts them
+      // preferredItem: formData.preferredItem // Pass preferred item
     })
 
     // Reset
-    setFormData({ name: "", description: "", stock: "1", image: "" })
+    setFormData({ name: "", description: "", stock: "1", image: "", tags: [], preferredItem: "" })
     setImagePreview("")
     setImageFile(null)
     setStep("upload")
@@ -127,6 +132,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
     setStep("upload")
     setImagePreview("")
     setImageFile(null)
+    setFormData({ name: "", description: "", stock: "1", image: "", tags: [], preferredItem: "" })
     onClose()
   }
 
@@ -172,7 +178,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     <img
                       src={imagePreview || "/placeholder.svg"}
                       alt="Preview"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover contrast-[1.08] saturate-[1.08] brightness-[1.05]"
                     />
                   ) : (
                     <div className="text-center p-4">
@@ -192,6 +198,19 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                           value={formData.name}
                           onChange={handleInputChange}
                           placeholder="e.g. Vintage Rattan Chair"
+                          className="w-full px-4 py-3 border-none rounded-xl bg-secondary/50 text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                      />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-bold text-foreground mb-2">
+                        Preferred Item to Barter With <span className="text-muted-foreground font-normal">(Optional)</span>
+                      </label>
+                      <input
+                          type="text"
+                          name="preferredItem"
+                          value={formData.preferredItem}
+                          onChange={handleInputChange}
+                          placeholder="e.g. Gaming Mouse, Plant Stand..."
                           className="w-full px-4 py-3 border-none rounded-xl bg-secondary/50 text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                       />
                   </div>
@@ -250,6 +269,21 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                   />
                 </div>
 
+                {/* Row 3: Preferred Barter Item (New) */}
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-2">
+                    Preferred Item to Barter With <span className="text-muted-foreground font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="preferredItem"
+                    value={formData.preferredItem}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Gaming Mouse, Plant Stand..."
+                    className="w-full px-4 py-3 border-none rounded-xl bg-secondary/50 text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+
                 {/* Row 4: Description */}
                 <div>
                   <label className="block text-sm font-bold text-foreground mb-2">Description</label>
@@ -262,6 +296,31 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     className="w-full px-4 py-3 border-none rounded-xl bg-secondary/50 text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
                   />
                 </div>
+
+                {/* Tags Display */}
+                {formData.tags && formData.tags.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-bold text-foreground mb-2">Tags</label>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag: any, index: number) => {
+                         // Parse color string (e.g., "zinc-600")
+                         const [colorName, shade] = tag.color.split("-");
+                         const bgClass = `bg-${colorName}-100`;
+                         const textClass = `text-${colorName}-${shade || "800"}`;
+                         const borderClass = `border-${colorName}-200`;
+                         
+                         // Fallback for safety
+                         const colorClass = `${bgClass} ${textClass} ${borderClass}`;
+                         
+                         return (
+                            <span key={index} className={`px-3 py-1 rounded-full text-xs font-bold border ${colorClass}`}>
+                                {tag.tag}
+                            </span>
+                         )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Submit Button */}
                 <Button
@@ -282,6 +341,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
         onClose={() => setIsAIModalOpen(false)}
         isLoading={isAILoading}
         result={aiResult}
+        preferredItem={formData.preferredItem}
         onAccept={handleAcceptAIResult}
       />
     </>
