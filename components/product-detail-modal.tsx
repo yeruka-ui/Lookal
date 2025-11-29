@@ -71,7 +71,7 @@ export function ProductDetailModal({ isOpen, product, onClose, onUpdate, onDelet
 
               <div>
                 <p className="text-sm text-foreground/60 mb-1">Price</p>
-                <p className="text-2xl font-bold text-primary">₱{formData.price.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-primary">${formData.price.toFixed(2)}</p>
               </div>
 
               <div>
@@ -114,7 +114,7 @@ export function ProductDetailModal({ isOpen, product, onClose, onUpdate, onDelet
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Price (₱)</label>
+                <label className="block text-sm font-semibold text-foreground mb-2">Price ($)</label>
                 <input
                   type="number"
                   name="price"

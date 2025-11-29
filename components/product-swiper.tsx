@@ -90,7 +90,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
       </div>
 
       {/* Product card */}
-      <div className="flex-1 flex items-center justify-center p-4 relative w-full max-w-md mx-auto">
+      <div className="flex-1 flex items-center justify-center p-0 md:p-4 relative w-full md:max-w-md mx-auto">
         {addedToCart === currentProduct?.id && (
           <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
             <div className="bg-green-600 text-white px-8 py-4 rounded-2xl flex flex-col items-center gap-2 shadow-2xl animate-in zoom-in duration-300">
@@ -115,27 +115,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
         </SwipeCard>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex justify-center gap-4 pb-6">
-        <button
-          onClick={handleSwipeLeft}
-          className="w-14 h-14 rounded-full bg-card border-2 border-destructive/30 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        >
-          <span className="text-2xl text-destructive">✕</span>
-        </button>
-        <button
-          onClick={handleSwipeDown}
-          className="w-12 h-12 rounded-full bg-card border-2 border-accent/30 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        >
-          <span className="text-xl text-accent">↓</span>
-        </button>
-        <button
-          onClick={handleSwipeRight}
-          className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-        >
-          <ShoppingCart className="w-6 h-6 text-primary-foreground" />
-        </button>
-      </div>
+
 
       {/* Product detail modal */}
       {showDetail && currentProduct && (

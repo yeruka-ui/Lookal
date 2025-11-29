@@ -4,7 +4,7 @@ import type { Product as MockProduct, Shop } from './mock-data'
 /**
  * Convert a Supabase product to the format expected by UI components
  */
-export function supabaseProductToMockProduct(product: SupabaseProduct, shopId: string = '1'): MockProduct {
+export function supabaseProductToMockProduct(product: SupabaseProduct, shopId: string = 'supabase-store'): MockProduct {
     return {
         id: product.id,
         shopId: shopId,
@@ -28,7 +28,7 @@ export function supabaseProductToMockProduct(product: SupabaseProduct, shopId: s
  */
 export function createShopFromSupabaseProducts(products: SupabaseProduct[], shopName: string = 'Lookal Store'): Shop {
     return {
-        id: '1',
+        id: 'supabase-store',
         name: shopName,
         owner: 'Local Seller',
         description: 'Discover amazing local products from our community sellers',
@@ -37,7 +37,7 @@ export function createShopFromSupabaseProducts(products: SupabaseProduct[], shop
         rating: 4.8,
         reviewCount: 150,
         location: 'Local Market',
-        products: products.map(p => supabaseProductToMockProduct(p, '1'))
+        products: products.map(p => supabaseProductToMockProduct(p, 'supabase-store'))
     }
 }
 

@@ -1,7 +1,7 @@
 "use client"
 
-import type { Product } from "@/app/seller_page/page"
-import { ProductCard } from "./product-card"
+import type { Product } from "@/lib/supabase/types"
+import { SellerProductCard } from "./seller-product-card"
 
 interface ProductGridProps {
   products: Product[]
@@ -23,7 +23,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} onClick={() => onProductClick(product)} />
+        <SellerProductCard key={product.id} product={product} onClick={() => onProductClick(product)} />
       ))}
     </div>
   )

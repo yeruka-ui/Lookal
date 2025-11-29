@@ -1,33 +1,21 @@
+// yeruka-ui/lookal/klyde2/app/layout.tsx
+
 import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
+import { CartProvider } from "@/lib/cart-context"
+import { MainLayoutWrapper } from "@/components/main-layout-wrapper"
+import { UIProvider } from "@/lib/ui-context"
 
 const geist = Geist({ subsets: ["latin"] })
 const geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Seller Dashboard - Inventory Management",
-  description: "Professional inventory management dashboard for sellers",
-  generator: "v0.app",
-  icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
-  },
+  title: "LocalMart - Swipe to Shop Local",
+  description: "Discover and support local entrepreneurs with a swipe",
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -37,8 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geist.className} antialiased`}>
-        {children}
+      <body className={`font-sans antialiased`}>
+        <CartProvider>
+          <UIProvider>
+            <MainLayoutWrapper>
+              {children}
+            </MainLayoutWrapper>
+          </UIProvider>
+        </CartProvider>
         <Analytics />
       </body>
     </html>
