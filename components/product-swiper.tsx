@@ -5,9 +5,9 @@ import type { Shop } from "@/lib/mock-data"
 import { useCart } from "@/lib/cart-context"
 import { SwipeCard } from "./swipe-card"
 import { ProductCard } from "./product-card"
-// Removed import of ProductDetailModal
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ShoppingCart, Check, Package } from "lucide-react"
+import { Progress } from "@/components/ui/progress" // ADDED
+import { ArrowLeft, Check, Package, RotateCcw } from "lucide-react" // Added RotateCcw
 
 interface ProductSwiperProps {
   shop: Shop
@@ -16,12 +16,14 @@ interface ProductSwiperProps {
 
 export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
   const [productIndex, setProductIndex] = useState(0)
-  // Removed [showDetail, setShowDetail] state
   const [addedToCart, setAddedToCart] = useState<string | null>(null)
   const { addItem } = useCart()
 
   const currentProduct = shop.products[productIndex]
   const hasMoreProducts = productIndex < shop.products.length
+  
+  const totalProducts = shop.products.length;
+  const progressValue = ((productIndex + 1) / totalProducts) * 100;
 
   const handleSwipeLeft = () => {
     setProductIndex((prev) => prev + 1)
@@ -40,8 +42,16 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
     }
   }
 
-  // Removed handleSwipeDown function
-
+  /**
+   * Implements backtrack: only undoes the last swipe (decrements index).
+   * This logic ensures the button is only active after the first product.
+   */
+  const handleRewind = () => {
+    if (productIndex > 0) {
+      setProductIndex(prev => prev - 1);
+      setAddedToCart(null); // Clear any visual feedback on the card
+    }
+  }
 
   if (!hasMoreProducts) {
     return (
@@ -65,20 +75,40 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background z-50">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-card">
-        <button
-          onClick={onBack}
-          className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h2 className="font-bold text-foreground">{shop.name}</h2>
-          <p className="text-sm text-muted-foreground">
-            Product {productIndex + 1} of {shop.products.length}
-          </p>
-        </div>
+      
+      {/* NEW HEADER: Progress Bar and Controls (Bumble/Tinder Style) */}
+      <div className="flex flex-col p-4 pb-2 border-b border-border bg-card">
+          <div className="flex items-center justify-between mb-2">
+              <button
+                  onClick={onBack}
+                  className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
+                  title="Back to shops"
+              >
+                  <ArrowLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex-1 text-center">
+                  <h2 className="text-sm font-bold text-foreground">{shop.name}</h2>
+                  <p className="text-xs text-muted-foreground">Product {productIndex + 1} of {totalProducts}</p>
+              </div>
+
+              {/* Rewind Button (Backtrack for accidental skip) */}
+              <button
+                  onClick={handleRewind}
+                  disabled={productIndex === 0}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-opacity ${
+                      productIndex > 0 
+                          ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' 
+                          : 'bg-secondary text-muted-foreground opacity-50 cursor-not-allowed'
+                  }`}
+                  title="Rewind (Undo Last Skip)"
+              >
+                  <RotateCcw className="w-4 h-4" />
+              </button>
+          </div>
+          
+          {/* Progress Bar */}
+          <Progress value={progressValue} className="h-1.5" />
       </div>
 
       {/* Product card */}
@@ -94,19 +124,17 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
           </div>
         )}
 
+        {/* The SwipeCard component manages the swiping and calls the handlers */}
         <SwipeCard
           key={currentProduct.id}
           onSwipeLeft={handleSwipeLeft}
           onSwipeRight={handleSwipeRight}
-          // Removed onSwipeDown prop
           leftLabel="SKIP"
           rightLabel="ADD"
-          // Removed downLabel prop
         >
           <ProductCard product={currentProduct} shopName={shop.name} />
         </SwipeCard>
       </div>
-
     </div>
   )
 }
