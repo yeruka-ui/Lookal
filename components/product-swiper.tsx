@@ -85,7 +85,7 @@ export function ProductSwiper({ shop, onBack }: ProductSwiperProps) {
       </div>
 
       {/* Product card */}
-      <div className="flex-1 flex items-center justify-center p-4 relative w-full max-w-md mx-auto">
+      <div className="flex-1 flex items-center justify-center p-0 md:p-4 relative w-full md:max-w-md mx-auto">
         {addedToCart === currentProduct?.id && (
           <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
             <div className="bg-green-600 text-white px-8 py-4 rounded-2xl flex flex-col items-center gap-2 shadow-2xl animate-in zoom-in duration-300">

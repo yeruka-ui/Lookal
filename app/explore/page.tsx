@@ -428,7 +428,7 @@ function ShopExploreView() {
 
             {/* Bumble/Tinder Style Info Overlay (Fixed Bottom) - Lighter Dynamic Gradient */}
             <div
-                className="fixed bottom-0 left-0 right-0 z-40 pt-32 pb-8 px-6 text-white pointer-events-none transition-opacity duration-300 ease-out"
+                className="fixed bottom-0 left-0 right-0 z-40 pt-32 pb-28 px-6 text-white pointer-events-none transition-opacity duration-300 ease-out"
                 // Fixed Opacity 1 (fully visible) for the gradient overlay
                 style={{
                     background: `linear-gradient(to top, ${currentColors.primary}D9 0%, ${currentColors.primary}99 50%, transparent 100%)`,
