@@ -16,14 +16,14 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('data') as File;
     const title = formData.get('title') as string;
-    const price = formData.get('price') as string;
+    // Price is no longer used in bartering mode
 
     // 1. Validation
     if (!file) {
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
     }
-    if (!title || !price) {
-      return NextResponse.json({ error: 'Title and price are required' }, { status: 400 });
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
     const arrayBuffer = await file.arrayBuffer();
@@ -153,7 +153,6 @@ export async function POST(req: NextRequest) {
     // 3. Response
     return NextResponse.json({
       title,
-      price,
       ai_description: aiResult,
       image_url: storageResult.url,
       is_generated_image: storageResult.is_generated,

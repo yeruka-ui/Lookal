@@ -18,9 +18,8 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
     name: "",
-    price: "",
     description: "",
-    stock: "",
+    stock: "1", // Default to 1 for bartering
     image: "",
   })
 
@@ -49,8 +48,8 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
   }
 
   const handleGenerateWithAI = async () => {
-    if (!imageFile || !formData.name || !formData.price) {
-      alert("Please upload an image and provide a name and price.")
+    if (!imageFile || !formData.name) {
+      alert("Please upload an image and provide a name.")
       return
     }
 
@@ -61,9 +60,8 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
     try {
       const data = new FormData()
       data.append("data", imageFile)
-      // Send placeholders if empty so the API doesn't reject it
-      data.append("title", formData.name || "Untitled Product")
-      data.append("price", formData.price || "0")
+      data.append("title", formData.name)
+      // Price removed for bartering
 
       const response = await fetch("/api/generate-listing", {
         method: "POST",
@@ -95,7 +93,6 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
         description: aiResult.ai_description,
         image: aiResult.image_url,
         name: aiResult.title !== "Untitled Product" ? aiResult.title : "",
-        price: aiResult.price !== "0" ? aiResult.price : "",
       }))
       setImagePreview(aiResult.image_url)
       setStep("form")
@@ -106,21 +103,21 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name || !formData.price || !formData.stock) {
-      alert("Please fill in all required fields")
+    if (!formData.name) {
+      alert("Please fill in the product name")
       return
     }
 
     onSubmit({
       name: formData.name,
-      price: Number.parseFloat(formData.price),
+      price: 0, // Bartering implies no currency, setting to 0
       description: formData.description,
-      stock: Number.parseInt(formData.stock),
+      stock: 1, // Default to 1
       image: formData.image || "/diverse-products-still-life.png",
     })
 
     // Reset
-    setFormData({ name: "", price: "", description: "", stock: "", image: "" })
+    setFormData({ name: "", description: "", stock: "1", image: "" })
     setImagePreview("")
     setImageFile(null)
     setStep("upload")
@@ -184,8 +181,8 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
                     <label className="block text-sm font-semibold text-foreground mb-2">Product Name</label>
                     <input
                         type="text"
@@ -196,36 +193,11 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                         className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                 </div>
-                <div>
-                    <label className="block text-sm font-semibold text-foreground mb-2">Price (₱)</label>
-                    <input
-                        type="number"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        placeholder="0.00"
-                        step="0.01"
-                        min="0"
-                        className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-foreground mb-2">Quantity</label>
-                    <input
-                        type="number"
-                        name="stock"
-                        value={formData.stock}
-                        onChange={handleInputChange}
-                        placeholder="0"
-                        min="0"
-                        className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div>
               </div>
 
               <Button
                 onClick={handleGenerateWithAI}
-                disabled={!imagePreview || !formData.name || !formData.price}
+                disabled={!imagePreview || !formData.name}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-bold shadow-lg shadow-primary/20"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
@@ -276,21 +248,6 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                 />
               </div>
 
-              {/* Row 3: Price */}
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Price (₱) *</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
-                  className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
               {/* Row 4: Description */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-2">Description</label>
@@ -301,20 +258,6 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                   placeholder="Enter product description"
                   rows={4}
                   className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                />
-              </div>
-
-              {/* Row 5: Stock Quantity */}
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Stock Quantity *</label>
-                <input
-                  type="number"
-                  name="stock"
-                  value={formData.stock}
-                  onChange={handleInputChange}
-                  placeholder="0"
-                  min="0"
-                  className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground placeholder-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 

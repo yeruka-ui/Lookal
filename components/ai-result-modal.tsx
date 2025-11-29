@@ -76,13 +76,6 @@ export function AIResultModal({ isOpen, onClose, isLoading, result, onAccept }: 
                 </div>
                 
                 <div>
-                  <label className="text-sm font-semibold text-foreground">Price</label>
-                  <div className="p-3 bg-muted/30 rounded-md text-sm text-foreground border border-border/50">
-                    ₱{result.price}
-                  </div>
-                </div>
-
-                <div>
                   <label className="text-sm font-semibold text-foreground">Description</label>
                   <div className="p-3 bg-muted/30 rounded-md text-sm text-foreground border border-border/50 italic">
                     "{result.description}"
