@@ -87,3 +87,40 @@ export async function deleteProduct(id: string): Promise<void> {
         throw error
     }
 }
+
+/**
+ * Fetch only products that are in stock (stock > 0)
+ */
+export async function getProductsInStock(): Promise<Product[]> {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .gt('stock', 0)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching in-stock products:', error)
+        throw error
+    }
+
+    return data || []
+}
+
+/**
+ * Fetch products with low stock (stock <= threshold)
+ */
+export async function getProductsWithLowStock(threshold: number = 5): Promise<Product[]> {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .lte('stock', threshold)
+        .gt('stock', 0)
+        .order('stock', { ascending: true })
+
+    if (error) {
+        console.error('Error fetching low stock products:', error)
+        throw error
+    }
+
+    return data || []
+}

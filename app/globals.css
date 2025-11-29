@@ -3,6 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Flea market green/white organic theme */
 :root {
   /* Updated to warm orange tones for cozy Filipino flea market aesthetic */
   --background: oklch(0.98 0.01 70);
@@ -76,6 +77,8 @@
 }
 
 @theme inline {
+  --font-sans: "DM Sans", "DM Sans Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
@@ -120,6 +123,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
